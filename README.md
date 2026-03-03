@@ -150,21 +150,6 @@ The entire application is a single `index.html` file plus this README. Single fi
 - **100dvh support** — proper viewport height on mobile browsers with address bars
 - **Scrollable header** — header scrolls horizontally on narrow screens instead of overflowing
 
-The search is pulling other projects. I have the full history from the session transcripts though. Here's the complete changelog based on all our sessions:
-markdown## Changelog
-
-### v1.2.0
-
-- **Select All toast** — "Selected!" feedback when clicking the Select All button
-- **iPad / tablet support** — editor and preview stack vertically in portrait orientation (≤820px)
-- **Mobile layout** — compact header, hidden button labels, and smaller controls at ≤600px
-- **Touch-friendly divider** — 12px hit target on touch devices, works both horizontal and vertical
-- **Keyboard shortcuts** — Tab inserts 2 spaces, Ctrl/Cmd+Enter runs code, Ctrl/Cmd+S prevented
-- **Orientation handling** — layout re-applies correctly on device rotation
-- **Safari drag fix** — added `-webkit-user-select` for stable divider dragging
-- **100dvh support** — proper viewport height on mobile browsers with address bars
-- **Scrollable header** — header scrolls horizontally on narrow screens instead of overflowing
-
 ### v1.1.0
 
 - **Light / dark theme** — toggle with animated sun/moon icon, persisted to localStorage
