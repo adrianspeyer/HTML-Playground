@@ -1,0 +1,919 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>HTML Playground</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --divider: 6px;
+      --left: 52%;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --font-ui: 'DM Sans', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --transition: 180ms cubic-bezier(.4,0,.2,1);
+    }
+
+    html[data-theme="light"] {
+      --bg: #f4f5f7;
+      --panel: #ffffff;
+      --text: #1c1e26;
+      --text-secondary: #5e6270;
+      --accent: #3b6cf5;
+      --accent-soft: rgba(59,108,245,.08);
+      --border: rgba(0,0,0,.08);
+      --border-strong: rgba(0,0,0,.13);
+      --surface: rgba(0,0,0,.03);
+      --surface-hover: rgba(0,0,0,.06);
+      --surface-active: rgba(0,0,0,.09);
+      --editor-bg: #fafbfc;
+      --console-bg: #f8f9fb;
+      --preview-bg: #eceef2;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.05);
+      --console-info: #1c1e26;
+      --console-warn: #9a6700;
+      --console-error: #d1242f;
+      --console-time: rgba(0,0,0,.35);
+      --iframe-bg: #fff;
+      --divider-line: rgba(0,0,0,.10);
+      --divider-hover: rgba(59,108,245,.3);
+      --header-bg: rgba(255,255,255,.82);
+      --tab-indicator: var(--accent);
+      --scrollbar-thumb: rgba(0,0,0,.15);
+      --copy-success: #1a7f37;
+      --danger: #d1242f;
+      --danger-bg: rgba(209,36,47,.06);
+    }
+
+    html[data-theme="dark"] {
+      --bg: #0f1117;
+      --panel: #161821;
+      --text: #e2e4ed;
+      --text-secondary: #8b8fa7;
+      --accent: #6b93ff;
+      --accent-soft: rgba(107,147,255,.10);
+      --border: rgba(255,255,255,.07);
+      --border-strong: rgba(255,255,255,.12);
+      --surface: rgba(255,255,255,.04);
+      --surface-hover: rgba(255,255,255,.07);
+      --surface-active: rgba(255,255,255,.10);
+      --editor-bg: #12141c;
+      --console-bg: #12141c;
+      --preview-bg: #0c0e14;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.3);
+      --console-info: rgba(226,228,237,.9);
+      --console-warn: #f0c239;
+      --console-error: #f47067;
+      --console-time: rgba(255,255,255,.28);
+      --iframe-bg: #fff;
+      --divider-line: rgba(255,255,255,.08);
+      --divider-hover: rgba(107,147,255,.35);
+      --header-bg: rgba(22,24,33,.85);
+      --tab-indicator: var(--accent);
+      --scrollbar-thumb: rgba(255,255,255,.12);
+      --copy-success: #3fb950;
+      --danger: #f47067;
+      --danger-bg: rgba(244,112,103,.08);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; }
+    body {
+      font-family: var(--font-ui);
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
+
+    /* == Header == */
+    header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 0 14px; height: 50px; min-height: 50px;
+      border-bottom: 1px solid var(--border);
+      background: var(--header-bg);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      position: relative; z-index: 10;
+      overflow-x: auto; overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+    header::-webkit-scrollbar { display: none; }
+    .logo { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .logo-mark {
+      width: 24px; height: 24px; border-radius: 7px;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: #fff;
+      box-shadow: 0 1px 3px rgba(59,108,245,.3);
+      font-family: var(--font-mono);
+    }
+    header h1 { font-size: 14px; font-weight: 700; letter-spacing: -.2px; white-space: nowrap; }
+    .spacer { flex: 1; min-width: 8px; }
+
+    .btn {
+      appearance: none;
+      border: 1px solid var(--border-strong);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: var(--radius-md);
+      padding: 0 12px; height: 34px;
+      font-family: var(--font-ui); font-size: 13px; font-weight: 600;
+      cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px;
+      transition: background var(--transition), box-shadow var(--transition);
+      box-shadow: var(--shadow-sm); white-space: nowrap; flex-shrink: 0;
+    }
+    .btn:hover { background: var(--surface-hover); }
+    .btn:active { background: var(--surface-active); box-shadow: none; }
+    .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 1px 3px rgba(59,108,245,.25); }
+    .btn-primary:hover { opacity: .9; background: var(--accent); }
+    .btn-icon { width: 34px; padding: 0; justify-content: center; }
+    .btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+    .theme-toggle {
+      width: 34px; height: 34px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      background: var(--panel);
+      cursor: pointer; box-shadow: var(--shadow-sm);
+      transition: background var(--transition);
+      position: relative; overflow: hidden;
+    }
+    .theme-toggle:hover { background: var(--surface-hover); }
+    .theme-toggle svg {
+      width: 16px; height: 16px;
+      transition: transform .35s cubic-bezier(.4,0,.2,1), opacity .25s;
+      color: var(--text-secondary); position: absolute;
+    }
+    html[data-theme="light"] .icon-moon { opacity: 0; transform: rotate(-90deg) scale(.5); }
+    html[data-theme="light"] .icon-sun { opacity: 1; transform: rotate(0) scale(1); }
+    html[data-theme="dark"] .icon-sun { opacity: 0; transform: rotate(90deg) scale(.5); }
+    html[data-theme="dark"] .icon-moon { opacity: 1; transform: rotate(0) scale(1); }
+
+    .autorun-label {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 13px; font-weight: 500;
+      color: var(--text-secondary); cursor: pointer; user-select: none; padding: 0 4px;
+      flex-shrink: 0;
+    }
+    .autorun-label input { display: none; }
+    .autorun-check {
+      width: 16px; height: 16px;
+      border: 1.5px solid var(--border-strong);
+      border-radius: 5px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--transition); background: var(--panel);
+    }
+    .autorun-check svg { width: 10px; height: 10px; opacity: 0; color: #fff; transition: opacity var(--transition); }
+    .autorun-label input:checked + .autorun-check { background: var(--accent); border-color: var(--accent); }
+    .autorun-label input:checked + .autorun-check svg { opacity: 1; }
+
+    .sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
+
+    /* == Layout == */
+    .wrap { flex: 1; display: flex; min-height: 0; }
+    .editorPane { width: var(--left); display: flex; flex-direction: column; background: var(--panel); min-height: 0; min-width: 0; }
+
+    .divider {
+      width: var(--divider); cursor: col-resize; background: transparent;
+      position: relative; z-index: 5;
+      touch-action: none;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .divider::after {
+      content: ''; width: 2px; height: 100%;
+      background: var(--divider-line); border-radius: 1px;
+      transition: background var(--transition), width var(--transition);
+    }
+    .divider:hover::after, .divider.dragging::after { background: var(--divider-hover); width: 3px; }
+
+    .previewPane { flex: 1; background: var(--preview-bg); min-height: 0; min-width: 0; display: flex; flex-direction: column; }
+
+    /* == Tabs + Editor Toolbar == */
+    .editor-top {
+      display: flex; align-items: flex-end; padding: 8px 10px 0;
+    }
+    .tabs { display: flex; gap: 2px; flex: 1; min-width: 0; }
+    .tab {
+      padding: 8px 14px; border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+      cursor: pointer; font-family: var(--font-mono);
+      font-size: 12px; font-weight: 500; color: var(--text-secondary);
+      transition: color var(--transition), background var(--transition);
+      position: relative; letter-spacing: .3px; white-space: nowrap;
+    }
+    .tab:hover { color: var(--text); background: var(--surface); }
+    .tab.active { color: var(--accent); background: var(--surface); }
+    .tab.active::after {
+      content: ''; position: absolute;
+      bottom: 0; left: 8px; right: 8px;
+      height: 2px; background: var(--tab-indicator);
+      border-radius: 1px 1px 0 0;
+    }
+
+    .editor-actions {
+      display: flex; gap: 2px; padding-bottom: 4px; flex-shrink: 0;
+    }
+    .ed-btn {
+      appearance: none; border: none; background: transparent;
+      color: var(--text-secondary); border-radius: var(--radius-sm);
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: background var(--transition), color var(--transition);
+      position: relative;
+    }
+    .ed-btn:hover { background: var(--surface-hover); color: var(--text); }
+    .ed-btn svg { width: 14px; height: 14px; }
+    .ed-btn.ed-danger:hover { background: var(--danger-bg); color: var(--danger); }
+    .ed-btn.copied { color: var(--copy-success); }
+    .ed-sep { width: 1px; height: 16px; background: var(--border); margin: 6px 3px; }
+
+    .tab-divider { height: 1px; background: var(--border); }
+
+    /* == Editor == */
+    .editorArea { flex: 1; min-height: 0; }
+    textarea {
+      width: 100%; height: 100%; resize: none;
+      border: none; background: var(--editor-bg); color: var(--text);
+      padding: 14px 16px; font-family: var(--font-mono);
+      font-size: 13px; line-height: 1.6; outline: none; tab-size: 2;
+    }
+    textarea::selection { background: var(--accent-soft); }
+
+    /* == Console == */
+    .consolePane {
+      border-top: 1px solid var(--border); background: var(--console-bg);
+      display: flex; flex-direction: column;
+      transition: min-height .25s cubic-bezier(.4,0,.2,1), max-height .25s cubic-bezier(.4,0,.2,1);
+      overflow: hidden;
+    }
+    .consolePane.expanded { min-height: 100px; max-height: 36%; }
+    .consolePane.collapsed { min-height: 0; max-height: 37px; }
+
+    .consoleHeader {
+      display: flex; align-items: center; gap: 8px;
+      padding: 0 10px; height: 37px; min-height: 37px;
+      cursor: pointer; user-select: none;
+      color: var(--text-secondary); font-size: 12px; font-weight: 600;
+      transition: background var(--transition);
+    }
+    .consoleHeader:hover { background: var(--surface); }
+
+    .console-title { font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; }
+    .console-count { font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--accent); }
+    .console-chevron {
+      width: 14px; height: 14px;
+      transition: transform .25s cubic-bezier(.4,0,.2,1);
+      color: var(--text-secondary); flex-shrink: 0;
+    }
+    .consolePane.collapsed .console-chevron { transform: rotate(-90deg); }
+
+    .console-actions { display: flex; gap: 2px; margin-left: auto; }
+    .console-btn {
+      appearance: none; border: none; background: transparent;
+      color: var(--text-secondary); border-radius: var(--radius-sm);
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: background var(--transition), color var(--transition);
+    }
+    .console-btn:hover { background: var(--surface-hover); color: var(--text); }
+    .console-btn svg { width: 14px; height: 14px; }
+    .console-btn.copied { color: var(--copy-success); }
+    .console-btn.copied svg { animation: pop .3s cubic-bezier(.4,0,.2,1); }
+    @keyframes pop { 0%{transform:scale(1)} 50%{transform:scale(1.25)} 100%{transform:scale(1)} }
+
+    .consoleBody {
+      flex: 1; padding: 6px 12px; overflow: auto;
+      font-family: var(--font-mono); font-size: 12px; line-height: 1.55;
+      white-space: pre-wrap; word-break: break-word;
+    }
+    .consolePane.collapsed .consoleBody { display: none; }
+
+    .log { padding: 3px 0; display: flex; gap: 8px; }
+    .log + .log { border-top: 1px solid var(--border); }
+    .log .t { color: var(--console-time); flex-shrink: 0; font-size: 11px; padding-top: 1px; }
+    .log .tag {
+      font-weight: 600; flex-shrink: 0; font-size: 10px;
+      letter-spacing: .3px; padding: 2px 5px; border-radius: 4px;
+      line-height: 1; display: flex; align-items: center;
+    }
+    .log.info .tag { color: var(--console-info); background: var(--surface); }
+    .log.warn .tag { color: var(--console-warn); background: rgba(154,103,0,.1); }
+    html[data-theme="dark"] .log.warn .tag { background: rgba(240,194,57,.1); }
+    .log.error .tag { color: var(--console-error); background: rgba(209,36,47,.08); }
+    html[data-theme="dark"] .log.error .tag { background: rgba(244,112,103,.1); }
+    .log .msg { flex: 1; min-width: 0; color: var(--console-info); }
+    .log.warn .msg { color: var(--console-warn); }
+    .log.error .msg { color: var(--console-error); }
+
+    /* == Preview == */
+    .preview-header {
+      display: flex; align-items: center;
+      padding: 0 12px; height: 37px; min-height: 37px;
+      font-size: 11px; font-weight: 600; letter-spacing: .5px;
+      text-transform: uppercase; color: var(--text-secondary);
+      font-family: var(--font-mono);
+      border-bottom: 1px solid var(--border); background: var(--panel);
+    }
+    iframe { flex: 1; width: 100%; border: 0; background: var(--iframe-bg); }
+
+    /* == Footer == */
+    .footer {
+      font-size: 11px; color: var(--text-secondary);
+      padding: 6px 14px; border-top: 1px solid var(--border);
+      background: var(--panel); display: flex; align-items: center; gap: 6px;
+      font-family: var(--font-mono); letter-spacing: .2px;
+      min-height: 30px; flex-shrink: 0;
+    }
+    .footer-sep { opacity: .4; }
+
+    /* == Toasts == */
+    .toast {
+      position: absolute; bottom: calc(100% + 6px); left: 50%;
+      background: var(--text); color: var(--panel);
+      font-family: var(--font-ui); font-size: 11px; font-weight: 600;
+      padding: 4px 10px; border-radius: 6px; white-space: nowrap;
+      pointer-events: none; z-index: 20;
+      opacity: 0; transition: opacity .15s, transform .15s;
+      transform: translateX(-50%) translateY(4px);
+    }
+    .toast.show {
+      opacity: 1; transform: translateX(-50%) translateY(0);
+    }
+    .toast::after {
+      content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+      border: 4px solid transparent; border-top-color: var(--text);
+    }
+
+    /* == Confirm dialog == */
+    .confirm-overlay {
+      display: none; position: fixed; inset: 0; z-index: 100;
+      background: rgba(0,0,0,.4); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center;
+    }
+    .confirm-overlay.visible { display: flex; }
+    .confirm-box {
+      background: var(--panel); border: 1px solid var(--border-strong);
+      border-radius: 14px; padding: 24px; width: 360px; max-width: 90vw;
+      box-shadow: 0 8px 32px rgba(0,0,0,.2);
+    }
+    .confirm-box h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    .confirm-box p { font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 20px; }
+    .confirm-actions { display: flex; gap: 8px; justify-content: flex-end; }
+    .confirm-actions .btn { height: 36px; font-size: 13px; }
+    .btn-danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+    .btn-danger:hover { opacity: .9; background: var(--danger); }
+
+    /* == Responsive: iPad / tablet portrait == */
+    @media (max-width: 820px) {
+      .wrap { flex-direction: column; }
+      .editorPane { width: 100% !important; height: var(--top-pct, 50%); min-height: 120px; }
+      .previewPane { flex: 1; min-height: 120px; }
+      .divider { width: 100%; height: var(--divider); cursor: row-resize; }
+      .divider::after { width: 100%; height: 2px; }
+      .divider:hover::after, .divider.dragging::after { height: 3px; width: 100%; }
+    }
+    /* == Responsive: small phones == */
+    @media (max-width: 600px) {
+      header { padding: 0 8px; gap: 4px; }
+      header h1 { font-size: 13px; }
+      .btn { padding: 0 8px; height: 30px; font-size: 12px; }
+      .btn-icon { width: 30px; }
+      .btn svg { width: 14px; height: 14px; }
+      .theme-toggle { width: 30px; height: 30px; }
+      .autorun-label { font-size: 12px; }
+      .btn-label { display: none; }
+      .sep { margin: 0 1px; }
+      .tab { padding: 6px 10px; font-size: 11px; }
+      .footer { padding: 4px 10px; font-size: 10px; }
+    }
+    /* == Touch: larger hit targets == */
+    @media (pointer: coarse) {
+      .divider { width: 12px; }
+      .ed-btn, .console-btn { width: 34px; height: 34px; }
+    }
+    @media (pointer: coarse) and (max-width: 820px) {
+      .divider { height: 12px; width: 100%; }
+    }
+
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <div class="logo-mark">&lt;/&gt;</div>
+      <h1>HTML Playground</h1>
+    </div>
+    <div class="spacer"></div>
+
+    <label class="autorun-label">
+      <input id="autorun" type="checkbox" />
+      <span class="autorun-check">
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2.5 6l2.5 2.5 4.5-5"/></svg>
+      </span>
+      Auto-run
+    </label>
+    <div class="sep"></div>
+
+    <button class="btn btn-primary" id="runBtn">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 2.5v11l9-5.5z"/></svg>
+      <span class="btn-label">Run</span>
+    </button>
+    <button class="btn" id="resetPreviewBtn" title="Hard-reset preview (kills runaway JS)">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 8a6 6 0 0111.47-2.4M14 8A6 6 0 012.53 10.4"/><path d="M14 2v4h-4M2 14v-4h4"/></svg>
+      <span class="btn-label">Reset Preview</span>
+    </button>
+    <button class="btn btn-icon" id="resetBtn" title="Reset code to starter template">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 8a6 6 0 0111.47-2.4M14 8A6 6 0 012.53 10.4"/><path d="M14 2v4h-4M2 14v-4h4"/></svg>
+    </button>
+    <div class="sep"></div>
+
+    <div class="theme-toggle" id="themeToggle" role="button" aria-label="Toggle light or dark theme" tabindex="0">
+      <svg class="icon-sun" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="4"/><path d="M10 1v2M10 17v2M1 10h2M17 10h2M3.93 3.93l1.41 1.41M14.66 14.66l1.41 1.41M3.93 16.07l1.41-1.41M14.66 5.34l1.41-1.41"/></svg>
+      <svg class="icon-moon" viewBox="0 0 20 20" fill="currentColor"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.003 8.003 0 1010.586 10.586z"/></svg>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="editorPane">
+      <!-- Tabs + Editor actions -->
+      <div class="editor-top">
+        <div class="tabs">
+          <div class="tab active" data-tab="html">index.html</div>
+          <div class="tab" data-tab="css">style.css</div>
+          <div class="tab" data-tab="js">script.js</div>
+        </div>
+        <div class="editor-actions">
+          <button class="ed-btn" id="edCopy" title="Copy code" style="position:relative">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="5" y="5" width="9" height="9" rx="1.5"/><path d="M5 11H3.5A1.5 1.5 0 012 9.5v-7A1.5 1.5 0 013.5 1h7A1.5 1.5 0 0112 2.5V5"/></svg>
+            <span class="toast" id="edCopyToast">Copied!</span>
+          </button>
+          <button class="ed-btn" id="edSelect" title="Select all code" style="position:relative">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 4h12M2 8h12M2 12h8"/></svg>
+            <span class="toast" id="edSelectToast">Selected!</span>
+          </button>
+          <button class="ed-btn ed-danger" id="edClear" title="Clear current tab">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M5 4v9a1 1 0 001 1h4a1 1 0 001-1V4"/></svg>
+          </button>
+          <div class="ed-sep"></div>
+          <button class="ed-btn" id="edNew" title="New project (clear all tabs)">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M9 2H4.5A1.5 1.5 0 003 3.5v9A1.5 1.5 0 004.5 14h7a1.5 1.5 0 001.5-1.5V6.5L9 2z"/><path d="M9 2v5h4"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="tab-divider"></div>
+
+      <div class="editorArea">
+        <textarea id="editor" spellcheck="false"></textarea>
+      </div>
+
+      <!-- Console -->
+      <div class="consolePane collapsed" id="consolePane">
+        <div class="consoleHeader" id="consoleHeader">
+          <svg class="console-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 3l5.5 5-5.5 5"/></svg>
+          <span class="console-title">Console</span>
+          <span class="console-count" id="consoleMeta"></span>
+          <div class="console-actions">
+            <button class="console-btn" id="copyConsole" title="Copy console output" style="position:relative">
+              <svg class="ccopy-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="5" y="5" width="9" height="9" rx="1.5"/><path d="M5 11H3.5A1.5 1.5 0 012 9.5v-7A1.5 1.5 0 013.5 1h7A1.5 1.5 0 0112 2.5V5"/></svg>
+              <svg class="ccheck-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none"><path d="M3 8.5l3.5 3.5 6.5-8"/></svg>
+              <span class="toast" id="consoleCopyToast">Copied!</span>
+            </button>
+            <button class="console-btn" id="clearConsole" title="Clear console">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="6"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="consoleBody" id="consoleBody"></div>
+      </div>
+    </div>
+
+    <div class="divider" id="divider" aria-label="Resize"></div>
+
+    <div class="previewPane" id="previewPane">
+      <div class="preview-header">Preview</div>
+      <iframe id="preview" sandbox="allow-scripts"></iframe>
+    </div>
+  </div>
+
+  <!-- Confirm dialog for New Project -->
+  <div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box">
+      <h3>New Project</h3>
+      <p>This will clear all code in every tab and reset the preview. Any unsaved work will be lost.</p>
+      <div class="confirm-actions">
+        <button class="btn" id="confirmCancel">Cancel</button>
+        <button class="btn btn-danger" id="confirmOk">Clear Everything</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>HTML Playground</span>
+    <span class="footer-sep">&middot;</span>
+    <span>v1.2.0</span>
+  </div>
+
+<script>
+(function() {
+  "use strict";
+
+  var LS_KEY = "html_playground_v5";
+  var editor = document.getElementById("editor");
+  var runBtn = document.getElementById("runBtn");
+  var resetBtn = document.getElementById("resetBtn");
+  var resetPreviewBtn = document.getElementById("resetPreviewBtn");
+  var autorun = document.getElementById("autorun");
+  var tabs = Array.from(document.querySelectorAll(".tab"));
+  var divider = document.getElementById("divider");
+  var root = document.documentElement;
+  var themeToggle = document.getElementById("themeToggle");
+  var consolePane = document.getElementById("consolePane");
+  var consoleHeader = document.getElementById("consoleHeader");
+  var consoleBody = document.getElementById("consoleBody");
+  var consoleMeta = document.getElementById("consoleMeta");
+  var clearConsoleBtn = document.getElementById("clearConsole");
+  var copyConsoleBtn = document.getElementById("copyConsole");
+  var consoleCopyToast = document.getElementById("consoleCopyToast");
+
+  // Editor action buttons
+  var edCopy = document.getElementById("edCopy");
+  var edCopyToast = document.getElementById("edCopyToast");
+  var edSelect = document.getElementById("edSelect");
+  var edSelectToast = document.getElementById("edSelectToast");
+  var edClear = document.getElementById("edClear");
+  var edNew = document.getElementById("edNew");
+  var confirmOverlay = document.getElementById("confirmOverlay");
+  var confirmCancel = document.getElementById("confirmCancel");
+  var confirmOk = document.getElementById("confirmOk");
+
+  // Detect platform for keyboard hint
+  var isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+
+  var starter = {
+    html: '<!doctype html>\n<html>\n  <head>\n    <meta charset="utf-8" />\n    <title>Demo</title>\n  </head>\n  <body>\n    <h2>Hello \ud83d\udc4b</h2>\n    <p>Edit HTML, CSS &amp; JS then click <strong>Run</strong>.</p>\n\n    <button id="btn">Click me</button>\n    <div id="out" style="margin-top:12px;"></div>\n  </body>\n</html>',
+    css: 'body {\n  font-family: system-ui, -apple-system, sans-serif;\n  padding: 24px;\n  max-width: 600px;\n}\n\nbutton {\n  padding: 10px 16px;\n  border-radius: 8px;\n  border: 1px solid #d0d5dd;\n  background: #fff;\n  font-size: 14px;\n  cursor: pointer;\n  transition: background .15s;\n}\n\nbutton:hover {\n  background: #f2f4f7;\n}',
+    js: 'document.getElementById("btn").addEventListener("click", function() {\n  console.log("Button clicked!");\n  document.getElementById("out").textContent =\n    "Clicked at " + new Date().toLocaleTimeString();\n});'
+  };
+
+  var state = loadState() || assign({}, starter, { activeTab: "html", leftPct: 52, autorun: false, theme: "light", consoleOpen: false });
+  autorun.checked = !!state.autorun;
+
+  function assign(target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var src = arguments[i];
+      if (src) for (var k in src) { if (src.hasOwnProperty(k)) target[k] = src[k]; }
+    }
+    return target;
+  }
+
+  // == Theme ==
+  function applyTheme(theme) {
+    state.theme = theme;
+    root.setAttribute("data-theme", theme);
+    saveState();
+  }
+  themeToggle.addEventListener("click", function() { applyTheme(state.theme === "dark" ? "light" : "dark"); });
+  themeToggle.addEventListener("keydown", function(e) {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); applyTheme(state.theme === "dark" ? "light" : "dark"); }
+  });
+  applyTheme(state.theme || "light");
+
+  // == Console collapse ==
+  function setConsoleOpen(open) {
+    state.consoleOpen = open;
+    consolePane.classList.toggle("expanded", open);
+    consolePane.classList.toggle("collapsed", !open);
+    saveState();
+  }
+  consoleHeader.addEventListener("click", function(e) {
+    if (e.target.closest(".console-actions")) return;
+    setConsoleOpen(!state.consoleOpen);
+  });
+  setConsoleOpen(!!state.consoleOpen);
+
+  // == Persistence ==
+  function loadState() {
+    try { return JSON.parse(localStorage.getItem(LS_KEY)); } catch(e) { return null; }
+  }
+  function saveState() {
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify({
+        html: state.html, css: state.css, js: state.js,
+        activeTab: state.activeTab, leftPct: state.leftPct,
+        autorun: autorun.checked, theme: state.theme,
+        consoleOpen: state.consoleOpen
+      }));
+    } catch(e) {}
+  }
+
+  function setActiveTab(tab) {
+    state.activeTab = tab;
+    tabs.forEach(function(t) { t.classList.toggle("active", t.dataset.tab === tab); });
+    editor.value = state[tab] || "";
+    saveState();
+  }
+
+  // == Console ==
+  var logs = [];
+  function fmtTime(d) { d = d || new Date(); return d.toLocaleTimeString([], { hour12: false }); }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"'`]/g, function(c) {
+      return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;","`":"&#96;"}[c];
+    });
+  }
+  function argsToText(args) {
+    return (args || []).map(function(a) {
+      if (typeof a === "string") return a;
+      try { return JSON.stringify(a, null, 2); } catch(e) { return String(a); }
+    }).join(" ");
+  }
+  function addLog(level, args) {
+    logs.push({ t: fmtTime(), level: level, text: argsToText(args) });
+    if (logs.length > 500) logs.shift();
+    renderConsoleTail(80);
+  }
+  function renderConsoleTail(tail) {
+    var slice = logs.slice(-(tail || 80));
+    consoleBody.innerHTML = slice.map(function(l) {
+      var tag = l.level.toUpperCase();
+      return '<div class="log ' + escapeHtml(l.level) + '">' +
+        '<span class="t">' + escapeHtml(l.t) + '</span>' +
+        '<span class="tag">' + escapeHtml(tag) + '</span>' +
+        '<span class="msg">' + escapeHtml(l.text) + '</span>' +
+        '</div>';
+    }).join("");
+    consoleBody.scrollTop = consoleBody.scrollHeight;
+    consoleMeta.textContent = logs.length ? String(logs.length) : "";
+  }
+  function clearConsole() { logs.length = 0; renderConsoleTail(); }
+  clearConsoleBtn.addEventListener("click", function(e) { e.stopPropagation(); clearConsole(); });
+
+  // == Toast helper ==
+  function showToast(toastEl, btnEl) {
+    if (btnEl) btnEl.classList.add("copied");
+    toastEl.classList.add("show");
+    setTimeout(function() {
+      toastEl.classList.remove("show");
+      if (btnEl) btnEl.classList.remove("copied");
+    }, 1500);
+  }
+
+  // == Console copy ==
+  copyConsoleBtn.addEventListener("click", function(e) {
+    e.stopPropagation();
+    var text = logs.map(function(l) { return "[" + l.t + "] [" + l.level.toUpperCase() + "] " + l.text; }).join("\n");
+    navigator.clipboard.writeText(text).then(function() {
+      var ci = copyConsoleBtn.querySelector(".ccopy-icon");
+      var ck = copyConsoleBtn.querySelector(".ccheck-icon");
+      if (ci) ci.style.display = "none";
+      if (ck) ck.style.display = "block";
+      showToast(consoleCopyToast, copyConsoleBtn);
+      setTimeout(function() {
+        if (ci) ci.style.display = "block";
+        if (ck) ck.style.display = "none";
+      }, 1500);
+    }).catch(function() {});
+  });
+
+  // == postMessage listener (source-verified) ==
+  window.addEventListener("message", function(ev) {
+    var iframe = getPreviewIframe();
+    if (!iframe || !iframe.contentWindow || ev.source !== iframe.contentWindow) return;
+    var data = ev.data;
+    if (!data || data.__playground !== true) return;
+    if (data.type === "console") addLog(data.level || "info", data.args || []);
+    if (data.type === "error") addLog("error", [data.message || "Error", data.stack || ""]);
+  });
+
+  // == Editor actions ==
+  edCopy.addEventListener("click", function() {
+    navigator.clipboard.writeText(editor.value).then(function() {
+      showToast(edCopyToast, edCopy);
+    }).catch(function() {});
+  });
+
+  edSelect.addEventListener("click", function() {
+    editor.focus();
+    editor.select();
+    showToast(edSelectToast, null);
+  });
+
+  edClear.addEventListener("click", function() {
+    editor.value = "";
+    state[state.activeTab] = "";
+    saveState();
+    editor.focus();
+  });
+
+  // New project with confirm
+  edNew.addEventListener("click", function() {
+    confirmOverlay.classList.add("visible");
+  });
+  confirmCancel.addEventListener("click", function() {
+    confirmOverlay.classList.remove("visible");
+  });
+  confirmOk.addEventListener("click", function() {
+    confirmOverlay.classList.remove("visible");
+    state.html = "";
+    state.css = "";
+    state.js = "";
+    setActiveTab("html");
+    autorun.checked = false;
+    clearConsole();
+    saveState();
+    resetPreview();
+  });
+  // Close on overlay click
+  confirmOverlay.addEventListener("click", function(e) {
+    if (e.target === confirmOverlay) confirmOverlay.classList.remove("visible");
+  });
+  // Close on Escape
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape" && confirmOverlay.classList.contains("visible")) {
+      confirmOverlay.classList.remove("visible");
+    }
+  });
+
+  // == Keyboard shortcuts ==
+  document.addEventListener("keydown", function(e) {
+    var mod = isMac ? e.metaKey : e.ctrlKey;
+    if (!mod) return;
+    if (e.key === "Enter") { e.preventDefault(); run(); }
+    if (e.key === "s") { e.preventDefault(); }
+  });
+
+  // == Tab key inserts 2 spaces ==
+  editor.addEventListener("keydown", function(e) {
+    if (e.key === "Tab") {
+      e.preventDefault();
+      var s = editor.selectionStart, n = editor.selectionEnd;
+      editor.value = editor.value.substring(0, s) + "  " + editor.value.substring(n);
+      editor.selectionStart = editor.selectionEnd = s + 2;
+      state[state.activeTab] = editor.value;
+      saveState();
+    }
+  });
+
+  // == Preview ==
+  function getPreviewIframe() { return document.getElementById("preview"); }
+
+  function resetPreview() {
+    var old = getPreviewIframe();
+    if (!old) return;
+    var next = document.createElement("iframe");
+    next.id = "preview";
+    next.sandbox = "allow-scripts";
+    next.style.cssText = "flex:1;width:100%;border:0;background:var(--iframe-bg)";
+    old.replaceWith(next);
+    addLog("warn", ["Preview reset (iframe recreated)."]);
+  }
+  resetPreviewBtn.addEventListener("click", resetPreview);
+
+  // == Build ==
+  function buildCsp() {
+    return "default-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; script-src 'unsafe-inline' https:; style-src 'unsafe-inline' https:; img-src data: blob: https:; font-src data: https:; connect-src https:; media-src blob: https:; frame-src https:";
+  }
+
+  function consoleBridge() {
+    return '<script>\n' +
+      '(function(){\n' +
+      '  var send=function(p){try{parent.postMessage(Object.assign({__playground:true},p),"*")}catch(e){}};\n' +
+      '  var orig={log:console.log.bind(console),warn:console.warn.bind(console),error:console.error.bind(console),info:(console.info||console.log).bind(console)};\n' +
+      '  var ser=function(v){if(v===undefined)return"undefined";if(v===null)return"null";if(typeof v==="string")return v;if(v instanceof Error)return v.message+(v.stack?"\\n"+v.stack:"");if(typeof v==="object"){try{return JSON.stringify(v,null,2)}catch(e){return String(v)}}return String(v)};\n' +
+      '  var wrap=function(lvl){return function(){var a=Array.prototype.slice.call(arguments);send({type:"console",level:lvl,args:a.map(ser)})}};\n' +
+      '  console.log=function(){orig.log.apply(null,arguments);wrap("info").apply(null,arguments)};\n' +
+      '  console.info=function(){orig.info.apply(null,arguments);wrap("info").apply(null,arguments)};\n' +
+      '  console.warn=function(){orig.warn.apply(null,arguments);wrap("warn").apply(null,arguments)};\n' +
+      '  console.error=function(){orig.error.apply(null,arguments);wrap("error").apply(null,arguments)};\n' +
+      '  window.addEventListener("error",function(e){send({type:"error",message:e.message,stack:(e.error&&e.error.stack)||""})});\n' +
+      '  window.addEventListener("unhandledrejection",function(e){var r=e.reason;var m="Unhandled promise rejection",s="";if(typeof r==="string")m=r;else if(r&&r.message){m=r.message;s=r.stack||""}else{try{m=JSON.stringify(r)}catch(x){m=String(r)}}send({type:"error",message:m,stack:s})});\n' +
+      '})();\n' +
+      '<\/script>';
+  }
+
+  function merge(html, css, js) {
+    var csp = buildCsp();
+    var bridge = consoleBridge();
+    var hasHtml = /<html[\s>]/i.test(html || "");
+    var hasHead = /<head[\s>]/i.test(html || "");
+    var hasBody = /<body[\s>]/i.test(html || "");
+
+    if (hasHtml) {
+      var o = String(html || "");
+      if (!hasHead) o = o.replace(/<html[\s\S]*?>/i, function(m) { return m + "\n<head></head>"; });
+      if (!hasBody) o = o.replace(/<\/head>/i, "</head>\n<body></body>");
+      o = o.replace(/<\/head>/i,
+        '  <meta http-equiv="Content-Security-Policy" content="' + csp + '">\n' +
+        '  <meta name="viewport" content="width=device-width,initial-scale=1"/>\n' +
+        '  <style>\n' + (css || "") + '\n  </style>\n</head>');
+      o = o.replace(/<body([\s\S]*?)>/i, function(m) { return m + "\n" + bridge + "\n"; });
+      o = o.replace(/<\/body>/i, '  <script>\n' + (js || "") + '\n  <\/script>\n</body>');
+      return o;
+    }
+
+    return '<!doctype html><html><head><meta charset="utf-8"/><meta http-equiv="Content-Security-Policy" content="' + csp + '"><meta name="viewport" content="width=device-width,initial-scale=1"/><style>' + (css || "") + '</style></head><body>' + bridge + (html || "") + '<script>' + (js || "") + '<\/script></body></html>';
+  }
+
+  function run() {
+    clearConsole();
+    addLog("info", ["Running\u2026"]);
+    var iframe = getPreviewIframe();
+    if (iframe) iframe.srcdoc = merge(state.html, state.css, state.js);
+  }
+
+  // == Tabs ==
+  tabs.forEach(function(t) { t.addEventListener("click", function() { setActiveTab(t.dataset.tab); }); });
+
+  // == Editing ==
+  var tmr = null;
+  editor.addEventListener("input", function() {
+    state[state.activeTab] = editor.value;
+    saveState();
+    if (!autorun.checked) return;
+    clearTimeout(tmr);
+    tmr = setTimeout(run, 400);
+  });
+
+  // == Header buttons ==
+  runBtn.addEventListener("click", run);
+  resetBtn.addEventListener("click", function() {
+    state.html = starter.html;
+    state.css = starter.css;
+    state.js = starter.js;
+    setActiveTab(state.activeTab || "html");
+    autorun.checked = false;
+    saveState();
+    run();
+  });
+
+  // == Divider ==
+  function isVertical() { return window.innerWidth <= 820; }
+
+  function setLeftPct(pct) {
+    var c = Math.max(20, Math.min(80, pct));
+    state.leftPct = c;
+    if (isVertical()) {
+      root.style.setProperty("--top-pct", c + "%");
+      root.style.setProperty("--left", "100%");
+    } else {
+      root.style.setProperty("--left", c + "%");
+    }
+    saveState();
+  }
+  setLeftPct(state.leftPct || 52);
+
+  // Re-apply layout on orientation change
+  var rTmr = null;
+  window.addEventListener("resize", function() {
+    clearTimeout(rTmr);
+    rTmr = setTimeout(function() { setLeftPct(state.leftPct || 52); }, 100);
+  });
+
+  var dragging = false;
+  divider.addEventListener("pointerdown", function(e) {
+    dragging = true;
+    divider.setPointerCapture(e.pointerId);
+    divider.classList.add("dragging");
+    document.body.style.cursor = isVertical() ? "row-resize" : "col-resize";
+    document.body.style.userSelect = "none";
+    document.body.style.webkitUserSelect = "none";
+  });
+  divider.addEventListener("pointermove", function(e) {
+    if (!dragging) return;
+    var rect = document.querySelector(".wrap").getBoundingClientRect();
+    if (isVertical()) {
+      setLeftPct(((e.clientY - rect.top) / rect.height) * 100);
+    } else {
+      setLeftPct(((e.clientX - rect.left) / rect.width) * 100);
+    }
+  });
+  function stopDrag() {
+    dragging = false;
+    divider.classList.remove("dragging");
+    document.body.style.cursor = "";
+    document.body.style.userSelect = "";
+    document.body.style.webkitUserSelect = "";
+  }
+  divider.addEventListener("pointerup", stopDrag);
+  divider.addEventListener("pointercancel", stopDrag);
+
+  // == Init ==
+  setActiveTab(state.activeTab || "html");
+  run();
+})();
+</script>
+</body>
+</html>
