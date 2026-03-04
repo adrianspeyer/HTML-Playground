@@ -2,7 +2,7 @@
 <html lang="en" data-theme="light">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <meta name="robots" content="noindex, nofollow" />
   <title>HTML Playground</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,6 +17,9 @@
       --font-ui: 'DM Sans', system-ui, -apple-system, sans-serif;
       --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       --transition: 180ms cubic-bezier(.4,0,.2,1);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --mobile-bar: 54px;
     }
 
     html[data-theme="light"] {
@@ -48,6 +51,8 @@
       --copy-success: #1a7f37;
       --danger: #d1242f;
       --danger-bg: rgba(209,36,47,.06);
+      --mobile-bar-bg: rgba(255,255,255,.92);
+      --mobile-bar-border: rgba(0,0,0,.1);
     }
 
     html[data-theme="dark"] {
@@ -79,6 +84,8 @@
       --copy-success: #3fb950;
       --danger: #f47067;
       --danger-bg: rgba(244,112,103,.08);
+      --mobile-bar-bg: rgba(22,24,33,.92);
+      --mobile-bar-border: rgba(255,255,255,.08);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; }
@@ -183,6 +190,8 @@
 
     .sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
 
+    .desktop-only { display: flex; }
+
     /* == Layout == */
     .wrap { flex: 1; display: flex; min-height: 0; }
     .editorPane { width: var(--left); display: flex; flex-direction: column; background: var(--panel); min-height: 0; min-width: 0; }
@@ -203,9 +212,7 @@
     .previewPane { flex: 1; background: var(--preview-bg); min-height: 0; min-width: 0; display: flex; flex-direction: column; }
 
     /* == Tabs + Editor Toolbar == */
-    .editor-top {
-      display: flex; align-items: flex-end; padding: 8px 10px 0;
-    }
+    .editor-top { display: flex; align-items: flex-end; padding: 8px 10px 0; }
     .tabs { display: flex; gap: 2px; flex: 1; min-width: 0; }
     .tab {
       padding: 8px 14px; border-radius: var(--radius-sm) var(--radius-sm) 0 0;
@@ -223,9 +230,7 @@
       border-radius: 1px 1px 0 0;
     }
 
-    .editor-actions {
-      display: flex; gap: 2px; padding-bottom: 4px; flex-shrink: 0;
-    }
+    .editor-actions { display: flex; gap: 2px; padding-bottom: 4px; flex-shrink: 0; }
     .ed-btn {
       appearance: none; border: none; background: transparent;
       color: var(--text-secondary); border-radius: var(--radius-sm);
@@ -349,15 +354,13 @@
       opacity: 0; transition: opacity .15s, transform .15s;
       transform: translateX(-50%) translateY(4px);
     }
-    .toast.show {
-      opacity: 1; transform: translateX(-50%) translateY(0);
-    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     .toast::after {
       content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
       border: 4px solid transparent; border-top-color: var(--text);
     }
 
-    /* == Confirm dialog == */
+    /* == Confirm / Menu dialog == */
     .confirm-overlay {
       display: none; position: fixed; inset: 0; z-index: 100;
       background: rgba(0,0,0,.4); backdrop-filter: blur(4px);
@@ -376,8 +379,162 @@
     .btn-danger { background: var(--danger); color: #fff; border-color: var(--danger); }
     .btn-danger:hover { opacity: .9; background: var(--danger); }
 
-    /* == Responsive: iPad / tablet portrait == */
+    /* ================================================================
+       MOBILE BOTTOM BAR
+       ================================================================ */
+    .mobile-bar { display: none; }
+
+    /* ================================================================
+       RESPONSIVE: MOBILE (max 820px)
+       Full-screen tabbed views — no stacked split
+       ================================================================ */
     @media (max-width: 820px) {
+      .desktop-only { display: none !important; }
+
+      header { height: 44px; min-height: 44px; padding: 0 10px; gap: 6px; }
+      header h1 { font-size: 13px; }
+      .theme-toggle { width: 30px; height: 30px; }
+
+      .footer { display: none; }
+
+      .wrap { flex-direction: column; position: relative; }
+
+      .editorPane {
+        width: 100% !important; height: 100% !important;
+        position: absolute; inset: 0; z-index: 2;
+        transition: opacity .2s ease, visibility .2s ease;
+      }
+      .previewPane {
+        width: 100% !important; height: 100% !important;
+        position: absolute; inset: 0; z-index: 1;
+        transition: opacity .2s ease, visibility .2s ease;
+      }
+
+      .divider { display: none !important; }
+      .preview-header { display: none; }
+
+      body.mobile-view-editor .previewPane { opacity: 0; visibility: hidden; pointer-events: none; }
+      body.mobile-view-editor .editorPane { opacity: 1; visibility: visible; pointer-events: auto; }
+
+      body.mobile-view-preview .editorPane { opacity: 0; visibility: hidden; pointer-events: none; }
+      body.mobile-view-preview .previewPane { opacity: 1; visibility: visible; pointer-events: auto; z-index: 2; }
+
+      textarea {
+        font-size: 14px;
+        padding: 12px 12px calc(12px + var(--mobile-bar) + var(--safe-bottom));
+      }
+
+      .consolePane.expanded { max-height: 50%; }
+
+      .editor-top { padding: 4px 8px 0; }
+      .tab { padding: 6px 10px; font-size: 11px; }
+      .ed-btn { width: 32px; height: 32px; }
+
+      /* ---- Mobile Bottom Bar ---- */
+      .mobile-bar {
+        display: flex;
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        z-index: 50;
+        height: calc(var(--mobile-bar) + var(--safe-bottom));
+        padding-bottom: var(--safe-bottom);
+        background: var(--mobile-bar-bg);
+        backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+        border-top: 1px solid var(--mobile-bar-border);
+        align-items: center;
+        justify-content: space-between;
+        padding-left: 6px;
+        padding-right: 6px;
+        gap: 4px;
+      }
+
+      .mob-seg {
+        display: flex;
+        background: var(--surface);
+        border-radius: 10px;
+        padding: 3px;
+        flex-shrink: 0;
+      }
+      .mob-seg-btn {
+        appearance: none; border: none;
+        background: transparent;
+        color: var(--text-secondary);
+        font-family: var(--font-ui);
+        font-size: 13px; font-weight: 600;
+        padding: 7px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all var(--transition);
+        display: flex; align-items: center; gap: 5px;
+        white-space: nowrap;
+      }
+      .mob-seg-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+      .mob-seg-btn.active {
+        background: var(--panel);
+        color: var(--text);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .mob-run {
+        appearance: none; border: none;
+        background: var(--accent); color: #fff;
+        font-family: var(--font-ui);
+        font-size: 14px; font-weight: 700;
+        height: 40px;
+        padding: 0 20px;
+        border-radius: 10px;
+        cursor: pointer;
+        display: flex; align-items: center; gap: 6px;
+        box-shadow: 0 2px 8px rgba(59,108,245,.3);
+        transition: opacity var(--transition), transform .1s;
+        flex-shrink: 0;
+      }
+      .mob-run:active { transform: scale(.96); }
+      .mob-run svg { width: 16px; height: 16px; }
+
+      .mob-actions { display: flex; gap: 2px; flex-shrink: 0; }
+      .mob-action-btn {
+        appearance: none; border: none;
+        background: transparent;
+        color: var(--text-secondary);
+        width: 36px; height: 36px;
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        transition: background var(--transition), color var(--transition);
+      }
+      .mob-action-btn:active { background: var(--surface-active); }
+      .mob-action-btn svg { width: 18px; height: 18px; }
+
+      .mob-console-badge {
+        display: none;
+        min-width: 18px; height: 18px;
+        padding: 0 5px;
+        border-radius: 9px;
+        background: var(--accent);
+        color: #fff;
+        font-family: var(--font-mono);
+        font-size: 10px; font-weight: 700;
+        align-items: center; justify-content: center;
+        line-height: 1;
+        margin-left: -4px;
+      }
+      .mob-console-badge.has-logs { display: inline-flex; }
+
+      /* Mobile menu items */
+      .mob-menu-items { display: flex; flex-direction: column; gap: 8px; }
+      .mob-menu-items .btn { width: 100%; justify-content: center; }
+    }
+
+    /* Very small phones */
+    @media (max-width: 380px) {
+      .mob-seg-btn { padding: 6px 10px; font-size: 12px; }
+      .mob-run { padding: 0 14px; font-size: 13px; height: 36px; }
+      .mob-seg-btn .mob-seg-label { display: none; }
+    }
+
+    /* Tablet portrait (821–1024) keeps stacked split */
+    @media (min-width: 821px) and (max-width: 1024px) {
       .wrap { flex-direction: column; }
       .editorPane { width: 100% !important; height: var(--top-pct, 50%); min-height: 120px; }
       .previewPane { flex: 1; min-height: 120px; }
@@ -385,32 +542,17 @@
       .divider::after { width: 100%; height: 2px; }
       .divider:hover::after, .divider.dragging::after { height: 3px; width: 100%; }
     }
-    /* == Responsive: small phones == */
-    @media (max-width: 600px) {
-      header { padding: 0 8px; gap: 4px; }
-      header h1 { font-size: 13px; }
-      .btn { padding: 0 8px; height: 30px; font-size: 12px; }
-      .btn-icon { width: 30px; }
-      .btn svg { width: 14px; height: 14px; }
-      .theme-toggle { width: 30px; height: 30px; }
-      .autorun-label { font-size: 12px; }
-      .btn-label { display: none; }
-      .sep { margin: 0 1px; }
-      .tab { padding: 6px 10px; font-size: 11px; }
-      .footer { padding: 4px 10px; font-size: 10px; }
-    }
-    /* == Touch: larger hit targets == */
-    @media (pointer: coarse) {
+
+    @media (pointer: coarse) and (min-width: 821px) {
       .divider { width: 12px; }
       .ed-btn, .console-btn { width: 34px; height: 34px; }
     }
-    @media (pointer: coarse) and (max-width: 820px) {
+    @media (pointer: coarse) and (min-width: 821px) and (max-width: 1024px) {
       .divider { height: 12px; width: 100%; }
     }
-
   </style>
 </head>
-<body>
+<body class="mobile-view-editor">
   <header>
     <div class="logo">
       <div class="logo-mark">&lt;/&gt;</div>
@@ -418,27 +560,27 @@
     </div>
     <div class="spacer"></div>
 
-    <label class="autorun-label">
+    <label class="autorun-label desktop-only">
       <input id="autorun" type="checkbox" />
       <span class="autorun-check">
         <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2.5 6l2.5 2.5 4.5-5"/></svg>
       </span>
       Auto-run
     </label>
-    <div class="sep"></div>
+    <div class="sep desktop-only"></div>
 
-    <button class="btn btn-primary" id="runBtn">
+    <button class="btn btn-primary desktop-only" id="runBtn">
       <svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 2.5v11l9-5.5z"/></svg>
       <span class="btn-label">Run</span>
     </button>
-    <button class="btn" id="resetPreviewBtn" title="Hard-reset preview (kills runaway JS)">
+    <button class="btn desktop-only" id="resetPreviewBtn" title="Hard-reset preview (kills runaway JS)">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 8a6 6 0 0111.47-2.4M14 8A6 6 0 012.53 10.4"/><path d="M14 2v4h-4M2 14v-4h4"/></svg>
       <span class="btn-label">Reset Preview</span>
     </button>
-    <button class="btn btn-icon" id="resetBtn" title="Reset code to starter template">
+    <button class="btn btn-icon desktop-only" id="resetBtn" title="Reset code to starter template">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 8a6 6 0 0111.47-2.4M14 8A6 6 0 012.53 10.4"/><path d="M14 2v4h-4M2 14v-4h4"/></svg>
     </button>
-    <div class="sep"></div>
+    <div class="sep desktop-only"></div>
 
     <div class="theme-toggle" id="themeToggle" role="button" aria-label="Toggle light or dark theme" tabindex="0">
       <svg class="icon-sun" viewBox="0 0 20 20" fill="currentColor"><circle cx="10" cy="10" r="4"/><path d="M10 1v2M10 17v2M1 10h2M17 10h2M3.93 3.93l1.41 1.41M14.66 14.66l1.41 1.41M3.93 16.07l1.41-1.41M14.66 5.34l1.41-1.41"/></svg>
@@ -448,7 +590,6 @@
 
   <div class="wrap">
     <div class="editorPane">
-      <!-- Tabs + Editor actions -->
       <div class="editor-top">
         <div class="tabs">
           <div class="tab active" data-tab="html">index.html</div>
@@ -479,7 +620,6 @@
         <textarea id="editor" spellcheck="false"></textarea>
       </div>
 
-      <!-- Console -->
       <div class="consolePane collapsed" id="consolePane">
         <div class="consoleHeader" id="consoleHeader">
           <svg class="console-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 3l5.5 5-5.5 5"/></svg>
@@ -508,7 +648,65 @@
     </div>
   </div>
 
-  <!-- Confirm dialog for New Project -->
+  <!-- Mobile Bottom Bar -->
+  <div class="mobile-bar" id="mobileBar">
+    <div class="mob-seg">
+      <button class="mob-seg-btn active" id="mobEditorBtn" aria-label="Editor">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 4h12M2 8h12M2 12h8"/></svg>
+        <span class="mob-seg-label">Code</span>
+      </button>
+      <button class="mob-seg-btn" id="mobPreviewBtn" aria-label="Preview">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M2 5h12"/></svg>
+        <span class="mob-seg-label">Preview</span>
+      </button>
+    </div>
+
+    <button class="mob-action-btn" id="mobConsoleBtn" aria-label="Toggle console">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 5l3 3-3 3"/><path d="M9 11h4"/></svg>
+    </button>
+    <span class="mob-console-badge" id="mobConsoleBadge">0</span>
+
+    <div style="flex:1"></div>
+
+    <button class="mob-run" id="mobRunBtn" aria-label="Run code">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 2.5v11l9-5.5z"/></svg>
+      Run
+    </button>
+
+    <button class="mob-action-btn" id="mobMoreBtn" aria-label="More actions">
+      <svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="3" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="8" cy="13" r="1.5"/></svg>
+    </button>
+  </div>
+
+  <!-- Mobile More Menu -->
+  <div class="confirm-overlay" id="mobMenuOverlay">
+    <div class="confirm-box" style="width:280px">
+      <h3>Options</h3>
+      <div class="mob-menu-items">
+        <label class="autorun-label" style="padding:8px 4px">
+          <input id="autorunMobile" type="checkbox" />
+          <span class="autorun-check">
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2.5 6l2.5 2.5 4.5-5"/></svg>
+          </span>
+          Auto-run
+        </label>
+        <button class="btn" id="mobResetPreview">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="width:14px;height:14px"><path d="M2 8a6 6 0 0111.47-2.4M14 8A6 6 0 012.53 10.4"/><path d="M14 2v4h-4M2 14v-4h4"/></svg>
+          Reset Preview
+        </button>
+        <button class="btn" id="mobResetCode">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="width:14px;height:14px"><path d="M2 8a6 6 0 0111.47-2.4M14 8A6 6 0 012.53 10.4"/><path d="M14 2v4h-4M2 14v-4h4"/></svg>
+          Reset to Starter
+        </button>
+        <button class="btn" id="mobNewProject">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="width:14px;height:14px"><path d="M9 2H4.5A1.5 1.5 0 003 3.5v9A1.5 1.5 0 004.5 14h7a1.5 1.5 0 001.5-1.5V6.5L9 2z"/><path d="M9 2v5h4"/></svg>
+          New Project
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm dialog -->
   <div class="confirm-overlay" id="confirmOverlay">
     <div class="confirm-box">
       <h3>New Project</h3>
@@ -523,7 +721,7 @@
   <div class="footer">
     <span>HTML Playground</span>
     <span class="footer-sep">&middot;</span>
-    <span>v1.2.0</span>
+    <span>v1.3.0</span>
   </div>
 
 <script>
@@ -536,6 +734,7 @@
   var resetBtn = document.getElementById("resetBtn");
   var resetPreviewBtn = document.getElementById("resetPreviewBtn");
   var autorun = document.getElementById("autorun");
+  var autorunMobile = document.getElementById("autorunMobile");
   var tabs = Array.from(document.querySelectorAll(".tab"));
   var divider = document.getElementById("divider");
   var root = document.documentElement;
@@ -548,7 +747,6 @@
   var copyConsoleBtn = document.getElementById("copyConsole");
   var consoleCopyToast = document.getElementById("consoleCopyToast");
 
-  // Editor action buttons
   var edCopy = document.getElementById("edCopy");
   var edCopyToast = document.getElementById("edCopyToast");
   var edSelect = document.getElementById("edSelect");
@@ -559,17 +757,30 @@
   var confirmCancel = document.getElementById("confirmCancel");
   var confirmOk = document.getElementById("confirmOk");
 
-  // Detect platform for keyboard hint
+  // Mobile
+  var mobEditorBtn = document.getElementById("mobEditorBtn");
+  var mobPreviewBtn = document.getElementById("mobPreviewBtn");
+  var mobRunBtn = document.getElementById("mobRunBtn");
+  var mobConsoleBtn = document.getElementById("mobConsoleBtn");
+  var mobConsoleBadge = document.getElementById("mobConsoleBadge");
+  var mobMoreBtn = document.getElementById("mobMoreBtn");
+  var mobMenuOverlay = document.getElementById("mobMenuOverlay");
+  var mobResetPreview = document.getElementById("mobResetPreview");
+  var mobResetCode = document.getElementById("mobResetCode");
+  var mobNewProject = document.getElementById("mobNewProject");
+
   var isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+  function isMobileWidth() { return window.innerWidth <= 820; }
 
   var starter = {
-    html: '<!doctype html>\n<html>\n  <head>\n    <meta charset="utf-8" />\n    <title>Demo</title>\n  </head>\n  <body>\n    <h2>Hello \ud83d\udc4b</h2>\n    <p>Edit HTML, CSS &amp; JS then click <strong>Run</strong>.</p>\n\n    <button id="btn">Click me</button>\n    <div id="out" style="margin-top:12px;"></div>\n  </body>\n</html>',
-    css: 'body {\n  font-family: system-ui, -apple-system, sans-serif;\n  padding: 24px;\n  max-width: 600px;\n}\n\nbutton {\n  padding: 10px 16px;\n  border-radius: 8px;\n  border: 1px solid #d0d5dd;\n  background: #fff;\n  font-size: 14px;\n  cursor: pointer;\n  transition: background .15s;\n}\n\nbutton:hover {\n  background: #f2f4f7;\n}',
-    js: 'document.getElementById("btn").addEventListener("click", function() {\n  console.log("Button clicked!");\n  document.getElementById("out").textContent =\n    "Clicked at " + new Date().toLocaleTimeString();\n});'
+    html: "<!doctype html>\n<html>\n  <head>\n    <meta charset=\"utf-8\" />\n    <title>Demo</title>\n  </head>\n  <body>\n    <h2>Hello \ud83d\udc4b</h2>\n    <p>Edit HTML, CSS &amp; JS then click <strong>Run</strong>.</p>\n\n    <button id=\"btn\">Click me</button>\n    <div id=\"out\" style=\"margin-top:12px;\"></div>\n  </body>\n</html>",
+    css: "body {\n  font-family: system-ui, -apple-system, sans-serif;\n  padding: 24px;\n  max-width: 600px;\n}\n\nbutton {\n  padding: 10px 16px;\n  border-radius: 8px;\n  border: 1px solid #d0d5dd;\n  background: #fff;\n  font-size: 14px;\n  cursor: pointer;\n  transition: background .15s;\n}\n\nbutton:hover {\n  background: #f2f4f7;\n}",
+    js: "document.getElementById(\"btn\").addEventListener(\"click\", function() {\n  console.log(\"Button clicked!\");\n  document.getElementById(\"out\").textContent =\n    \"Clicked at \" + new Date().toLocaleTimeString();\n});"
   };
 
-  var state = loadState() || assign({}, starter, { activeTab: "html", leftPct: 52, autorun: false, theme: "light", consoleOpen: false });
+  var state = loadState() || assign({}, starter, { activeTab: "html", leftPct: 52, autorun: false, theme: "light", consoleOpen: false, mobileView: "editor" });
   autorun.checked = !!state.autorun;
+  autorunMobile.checked = !!state.autorun;
 
   function assign(target) {
     for (var i = 1; i < arguments.length; i++) {
@@ -578,6 +789,18 @@
     }
     return target;
   }
+
+  // Sync autorun checkboxes
+  autorun.addEventListener("change", function() {
+    autorunMobile.checked = autorun.checked;
+    state.autorun = autorun.checked;
+    saveState();
+  });
+  autorunMobile.addEventListener("change", function() {
+    autorun.checked = autorunMobile.checked;
+    state.autorun = autorunMobile.checked;
+    saveState();
+  });
 
   // == Theme ==
   function applyTheme(theme) {
@@ -591,7 +814,7 @@
   });
   applyTheme(state.theme || "light");
 
-  // == Console collapse ==
+  // == Console ==
   function setConsoleOpen(open) {
     state.consoleOpen = open;
     consolePane.classList.toggle("expanded", open);
@@ -614,7 +837,7 @@
         html: state.html, css: state.css, js: state.js,
         activeTab: state.activeTab, leftPct: state.leftPct,
         autorun: autorun.checked, theme: state.theme,
-        consoleOpen: state.consoleOpen
+        consoleOpen: state.consoleOpen, mobileView: state.mobileView
       }));
     } catch(e) {}
   }
@@ -626,7 +849,58 @@
     saveState();
   }
 
-  // == Console ==
+  // == Mobile view switching ==
+  function setMobileView(view) {
+    state.mobileView = view;
+    document.body.classList.remove("mobile-view-editor", "mobile-view-preview");
+    document.body.classList.add("mobile-view-" + view);
+    mobEditorBtn.classList.toggle("active", view === "editor");
+    mobPreviewBtn.classList.toggle("active", view === "preview");
+    saveState();
+  }
+
+  mobEditorBtn.addEventListener("click", function() { setMobileView("editor"); });
+  mobPreviewBtn.addEventListener("click", function() {
+    setMobileView("preview");
+    run();
+  });
+
+  // Mobile Run = run + switch to preview
+  mobRunBtn.addEventListener("click", function() {
+    run();
+    setMobileView("preview");
+  });
+
+  // Mobile console toggle
+  mobConsoleBtn.addEventListener("click", function() {
+    if (state.mobileView !== "editor") setMobileView("editor");
+    setConsoleOpen(!state.consoleOpen);
+  });
+
+  // Mobile more menu
+  mobMoreBtn.addEventListener("click", function() { mobMenuOverlay.classList.add("visible"); });
+  mobMenuOverlay.addEventListener("click", function(e) {
+    if (e.target === mobMenuOverlay) mobMenuOverlay.classList.remove("visible");
+  });
+  mobResetPreview.addEventListener("click", function() {
+    mobMenuOverlay.classList.remove("visible");
+    resetPreview();
+  });
+  mobResetCode.addEventListener("click", function() {
+    mobMenuOverlay.classList.remove("visible");
+    state.html = starter.html; state.css = starter.css; state.js = starter.js;
+    setActiveTab(state.activeTab || "html");
+    autorun.checked = false; autorunMobile.checked = false;
+    saveState(); run();
+  });
+  mobNewProject.addEventListener("click", function() {
+    mobMenuOverlay.classList.remove("visible");
+    confirmOverlay.classList.add("visible");
+  });
+
+  setMobileView(state.mobileView || "editor");
+
+  // == Console logging ==
   var logs = [];
   function fmtTime(d) { d = d || new Date(); return d.toLocaleTimeString([], { hour12: false }); }
   function escapeHtml(s) {
@@ -640,10 +914,19 @@
       try { return JSON.stringify(a, null, 2); } catch(e) { return String(a); }
     }).join(" ");
   }
+  function updateMobileConsoleBadge() {
+    if (logs.length > 0) {
+      mobConsoleBadge.textContent = logs.length > 99 ? "99+" : String(logs.length);
+      mobConsoleBadge.classList.add("has-logs");
+    } else {
+      mobConsoleBadge.classList.remove("has-logs");
+    }
+  }
   function addLog(level, args) {
     logs.push({ t: fmtTime(), level: level, text: argsToText(args) });
     if (logs.length > 500) logs.shift();
     renderConsoleTail(80);
+    updateMobileConsoleBadge();
   }
   function renderConsoleTail(tail) {
     var slice = logs.slice(-(tail || 80));
@@ -658,10 +941,10 @@
     consoleBody.scrollTop = consoleBody.scrollHeight;
     consoleMeta.textContent = logs.length ? String(logs.length) : "";
   }
-  function clearConsole() { logs.length = 0; renderConsoleTail(); }
+  function clearConsole() { logs.length = 0; renderConsoleTail(); updateMobileConsoleBadge(); }
   clearConsoleBtn.addEventListener("click", function(e) { e.stopPropagation(); clearConsole(); });
 
-  // == Toast helper ==
+  // == Toast ==
   function showToast(toastEl, btnEl) {
     if (btnEl) btnEl.classList.add("copied");
     toastEl.classList.add("show");
@@ -671,7 +954,7 @@
     }, 1500);
   }
 
-  // == Console copy ==
+  // Console copy
   copyConsoleBtn.addEventListener("click", function(e) {
     e.stopPropagation();
     var text = logs.map(function(l) { return "[" + l.t + "] [" + l.level.toUpperCase() + "] " + l.text; }).join("\n");
@@ -688,7 +971,7 @@
     }).catch(function() {});
   });
 
-  // == postMessage listener (source-verified) ==
+  // postMessage listener
   window.addEventListener("message", function(ev) {
     var iframe = getPreviewIframe();
     if (!iframe || !iframe.contentWindow || ev.source !== iframe.contentWindow) return;
@@ -698,56 +981,42 @@
     if (data.type === "error") addLog("error", [data.message || "Error", data.stack || ""]);
   });
 
-  // == Editor actions ==
+  // Editor actions
   edCopy.addEventListener("click", function() {
     navigator.clipboard.writeText(editor.value).then(function() {
       showToast(edCopyToast, edCopy);
     }).catch(function() {});
   });
-
   edSelect.addEventListener("click", function() {
-    editor.focus();
-    editor.select();
+    editor.focus(); editor.select();
     showToast(edSelectToast, null);
   });
-
   edClear.addEventListener("click", function() {
-    editor.value = "";
-    state[state.activeTab] = "";
-    saveState();
-    editor.focus();
+    editor.value = ""; state[state.activeTab] = "";
+    saveState(); editor.focus();
   });
 
-  // New project with confirm
-  edNew.addEventListener("click", function() {
-    confirmOverlay.classList.add("visible");
-  });
-  confirmCancel.addEventListener("click", function() {
-    confirmOverlay.classList.remove("visible");
-  });
+  // New project
+  edNew.addEventListener("click", function() { confirmOverlay.classList.add("visible"); });
+  confirmCancel.addEventListener("click", function() { confirmOverlay.classList.remove("visible"); });
   confirmOk.addEventListener("click", function() {
     confirmOverlay.classList.remove("visible");
-    state.html = "";
-    state.css = "";
-    state.js = "";
+    state.html = ""; state.css = ""; state.js = "";
     setActiveTab("html");
-    autorun.checked = false;
-    clearConsole();
-    saveState();
-    resetPreview();
+    autorun.checked = false; autorunMobile.checked = false;
+    clearConsole(); saveState(); resetPreview();
   });
-  // Close on overlay click
   confirmOverlay.addEventListener("click", function(e) {
     if (e.target === confirmOverlay) confirmOverlay.classList.remove("visible");
   });
-  // Close on Escape
   document.addEventListener("keydown", function(e) {
-    if (e.key === "Escape" && confirmOverlay.classList.contains("visible")) {
-      confirmOverlay.classList.remove("visible");
+    if (e.key === "Escape") {
+      if (confirmOverlay.classList.contains("visible")) confirmOverlay.classList.remove("visible");
+      if (mobMenuOverlay.classList.contains("visible")) mobMenuOverlay.classList.remove("visible");
     }
   });
 
-  // == Keyboard shortcuts ==
+  // Keyboard shortcuts
   document.addEventListener("keydown", function(e) {
     var mod = isMac ? e.metaKey : e.ctrlKey;
     if (!mod) return;
@@ -755,7 +1024,7 @@
     if (e.key === "s") { e.preventDefault(); }
   });
 
-  // == Tab key inserts 2 spaces ==
+  // Tab inserts spaces
   editor.addEventListener("keydown", function(e) {
     if (e.key === "Tab") {
       e.preventDefault();
@@ -767,9 +1036,8 @@
     }
   });
 
-  // == Preview ==
+  // Preview
   function getPreviewIframe() { return document.getElementById("preview"); }
-
   function resetPreview() {
     var old = getPreviewIframe();
     if (!old) return;
@@ -782,13 +1050,13 @@
   }
   resetPreviewBtn.addEventListener("click", resetPreview);
 
-  // == Build ==
+  // Build
   function buildCsp() {
     return "default-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; script-src 'unsafe-inline' https:; style-src 'unsafe-inline' https:; img-src data: blob: https:; font-src data: https:; connect-src https:; media-src blob: https:; frame-src https:";
   }
 
   function consoleBridge() {
-    return '<script>\n' +
+    return '<scr' + 'ipt>\n' +
       '(function(){\n' +
       '  var send=function(p){try{parent.postMessage(Object.assign({__playground:true},p),"*")}catch(e){}};\n' +
       '  var orig={log:console.log.bind(console),warn:console.warn.bind(console),error:console.error.bind(console),info:(console.info||console.log).bind(console)};\n' +
@@ -801,7 +1069,7 @@
       '  window.addEventListener("error",function(e){send({type:"error",message:e.message,stack:(e.error&&e.error.stack)||""})});\n' +
       '  window.addEventListener("unhandledrejection",function(e){var r=e.reason;var m="Unhandled promise rejection",s="";if(typeof r==="string")m=r;else if(r&&r.message){m=r.message;s=r.stack||""}else{try{m=JSON.stringify(r)}catch(x){m=String(r)}}send({type:"error",message:m,stack:s})});\n' +
       '})();\n' +
-      '<\/script>';
+      '</scr' + 'ipt>';
   }
 
   function merge(html, css, js) {
@@ -820,11 +1088,11 @@
         '  <meta name="viewport" content="width=device-width,initial-scale=1"/>\n' +
         '  <style>\n' + (css || "") + '\n  </style>\n</head>');
       o = o.replace(/<body([\s\S]*?)>/i, function(m) { return m + "\n" + bridge + "\n"; });
-      o = o.replace(/<\/body>/i, '  <script>\n' + (js || "") + '\n  <\/script>\n</body>');
+      o = o.replace(/<\/body>/i, '  <scr' + 'ipt>\n' + (js || "") + '\n  </scr' + 'ipt>\n</body>');
       return o;
     }
 
-    return '<!doctype html><html><head><meta charset="utf-8"/><meta http-equiv="Content-Security-Policy" content="' + csp + '"><meta name="viewport" content="width=device-width,initial-scale=1"/><style>' + (css || "") + '</style></head><body>' + bridge + (html || "") + '<script>' + (js || "") + '<\/script></body></html>';
+    return '<!doctype html><html><head><meta charset="utf-8"/><meta http-equiv="Content-Security-Policy" content="' + csp + '"><meta name="viewport" content="width=device-width,initial-scale=1"/><style>' + (css || "") + '</style></head><body>' + bridge + (html || "") + '<scr' + 'ipt>' + (js || "") + '</scr' + 'ipt></body></html>';
   }
 
   function run() {
@@ -834,10 +1102,10 @@
     if (iframe) iframe.srcdoc = merge(state.html, state.css, state.js);
   }
 
-  // == Tabs ==
+  // Tabs
   tabs.forEach(function(t) { t.addEventListener("click", function() { setActiveTab(t.dataset.tab); }); });
 
-  // == Editing ==
+  // Editing
   var tmr = null;
   editor.addEventListener("input", function() {
     state[state.activeTab] = editor.value;
@@ -847,20 +1115,17 @@
     tmr = setTimeout(run, 400);
   });
 
-  // == Header buttons ==
+  // Header buttons
   runBtn.addEventListener("click", run);
   resetBtn.addEventListener("click", function() {
-    state.html = starter.html;
-    state.css = starter.css;
-    state.js = starter.js;
+    state.html = starter.html; state.css = starter.css; state.js = starter.js;
     setActiveTab(state.activeTab || "html");
-    autorun.checked = false;
-    saveState();
-    run();
+    autorun.checked = false; autorunMobile.checked = false;
+    saveState(); run();
   });
 
-  // == Divider ==
-  function isVertical() { return window.innerWidth <= 820; }
+  // Divider (desktop only)
+  function isVertical() { return window.innerWidth > 820 && window.innerWidth <= 1024; }
 
   function setLeftPct(pct) {
     var c = Math.max(20, Math.min(80, pct));
@@ -875,7 +1140,6 @@
   }
   setLeftPct(state.leftPct || 52);
 
-  // Re-apply layout on orientation change
   var rTmr = null;
   window.addEventListener("resize", function() {
     clearTimeout(rTmr);
@@ -910,7 +1174,7 @@
   divider.addEventListener("pointerup", stopDrag);
   divider.addEventListener("pointercancel", stopDrag);
 
-  // == Init ==
+  // Init
   setActiveTab(state.activeTab || "html");
   run();
 })();

@@ -2,7 +2,7 @@
 
 A lightweight, secure, single-file HTML playground hosted via GitHub Pages.
 
-Split editor and live preview environment similar to online HTML compilers — fully self-contained, open source, and sandboxed for safety.
+Split editor and live preview environment similar to online HTML compilers — fully self-contained, open source, and sandboxed for safety. Mobile-first design with full-screen Code/Preview toggle on phones and tablets.
 
 **[Live Demo](https://adrianspeyer.github.io/html-playground/)**
 
@@ -11,6 +11,7 @@ Split editor and live preview environment similar to online HTML compilers — f
 ## Features
 
 - Split-pane layout (editor + preview) with draggable divider
+- Mobile-first full-screen mode — toggle between Code and Preview via bottom bar
 - HTML / CSS / JS tabs
 - Manual **Run** button with optional **Auto-run**
 - Console panel with collapse/expand, copy, and clear
@@ -137,6 +138,20 @@ The entire application is a single `index.html` file plus this README. Single fi
 ---
 
 ## Changelog
+
+### v1.3.0
+
+- **Mobile full-screen mode** — on screens ≤820px, editor and preview are full-screen views toggled via a segmented control in a fixed bottom bar (replaces the stacked split layout)
+- **Mobile bottom bar** — Code/Preview toggle, Run button, console toggle with log count badge, and a More menu for Auto-run, Reset Preview, Reset to Starter, and New Project
+- **Run + switch** — tapping Run on mobile automatically switches to full-screen preview
+- **Preview on tap** — switching to Preview auto-runs the code so the output is always fresh
+- **Safe area support** — bottom bar respects `env(safe-area-inset-bottom)` for devices with home indicators (iPhone X and later)
+- **Viewport lock** — `maximum-scale=1, user-scalable=no` prevents iOS double-tap zoom on the textarea
+- **Larger mobile editor font** — textarea bumped to 14px on mobile for readability
+- **Console badge** — log count badge on the mobile console button shows how many messages have been captured
+- **Mobile More menu** — overlay menu provides access to all secondary actions (Auto-run, Reset Preview, Reset to Starter, New Project)
+- **Synced autorun** — desktop and mobile Auto-run checkboxes stay in sync
+- **Desktop unchanged** — side-by-side layout, draggable divider, and all header controls remain identical
 
 ### v1.2.0
 
