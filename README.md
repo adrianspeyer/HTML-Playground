@@ -19,6 +19,8 @@ Split editor and live preview environment similar to online HTML compilers — f
 - External CDN libraries supported
 - LocalStorage persistence for code and preferences
 - Hard **Reset Preview** to kill runaway scripts
+- **Export** — download your merged HTML/CSS/JS as a standalone `.html` file
+- Keyboard accessible — tabs, console, and pane divider all operable without a mouse
 - Single `index.html` file — no build step, no backend
 
 ---
@@ -60,7 +62,8 @@ The preview runs inside a sandboxed iframe with restricted capabilities.
 | `img-src` | `data: blob: https:` | Allow images from data URIs, blobs, and HTTPS |
 | `connect-src` | `https:` | Allow fetch/XHR to HTTPS endpoints |
 | `form-action` | `'none'` | Block all form submissions |
-| `frame-ancestors` | `'none'` | Prevent framing of preview content |
+
+> Note: `frame-ancestors` is intentionally **not** included — the CSP is delivered via a `<meta>` tag, and per spec, `frame-ancestors` is ignored in meta-delivered policies. Framing protection comes from the iframe `sandbox` attribute instead.
 
 **Console bridge security:** The `postMessage` listener verifies that incoming messages originate from the preview iframe `contentWindow` before processing, preventing spoofed console messages from other sources.
 
@@ -68,7 +71,7 @@ The preview runs inside a sandboxed iframe with restricted capabilities.
 
 - **External scripts are allowed.** Because `script-src` permits any HTTPS source, user code can load and execute arbitrary remote JavaScript. This is by design for a personal/educational tool. If you are adapting this for a multi-tenant platform, restrict `script-src` to specific CDN domains.
 - **`connect-src https:` is broad.** Preview code can make network requests to any HTTPS endpoint. This enables APIs and fetch-based workflows but means untrusted code could exfiltrate data visible within the iframe sandbox.
-- **HTML merging uses regex.** The function that injects CSP and the console bridge into user HTML uses regular expressions to locate head, body, etc. Edge cases (e.g., those strings inside HTML comments or attribute values) could cause misinjection. Low risk for typical usage.
+- **HTML merging uses regex.** The function that injects CSP and the console bridge into user HTML uses regular expressions to locate head, body, etc. Rare edge cases (e.g., those strings inside HTML comments or attribute values) could cause misinjection. Low risk for typical usage. Note: all replacements containing user content use function replacers (so `$&`-style replacement patterns in user code are never interpreted), and `</script>` / `</style>` sequences in user code are escaped to prevent breaking out of the injected wrapper tags.
 
 ### Recommendations for External Libraries
 
@@ -138,6 +141,20 @@ The entire application is a single `index.html` file plus this README. Single fi
 ---
 
 ## Changelog
+
+### v1.4.0
+
+**Fixes**
+
+- **Replacement-pattern bug** — user CSS/JS containing `$&`, `` $` ``, or `$'` was being mangled during merge because it was passed as a `String.replace()` replacement string; all merge replacements now use function replacers
+- **`</script>` / `</style>` breakout** — user code containing these literal sequences could terminate the injected wrapper tags and break the preview; they are now escaped (`<\/script`, `<\/style` — semantically identical inside JS and CSS strings)
+- **Tab key preserved undo** — Tab indentation now uses `insertText` instead of reassigning `textarea.value`, so Ctrl/Cmd+Z works after indenting
+- **CSP accuracy** — removed the no-op `frame-ancestors` directive (ignored in meta-delivered CSP per spec; framing protection comes from the iframe sandbox)
+
+**New**
+
+- **Export** — download the merged document (without the playground's CSP/console bridge) as a standalone `playground.html`; available in the desktop header and the mobile More menu
+- **Keyboard accessibility** — editor tabs are a proper ARIA tablist (Enter/Space to activate, arrow keys to move), the console header toggles with Enter/Space and reports `aria-expanded`, and the pane divider is a focusable ARIA separator resizable with arrow keys; all three have visible focus indicators
 
 ### v1.3.0
 

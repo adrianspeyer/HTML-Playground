@@ -209,6 +209,13 @@
     }
     .divider:hover::after, .divider.dragging::after { background: var(--divider-hover); width: 3px; }
 
+    /* Keyboard focus indicators */
+    .divider:focus-visible { outline: none; }
+    .divider:focus-visible::after { background: var(--accent); width: 3px; }
+    .tab:focus-visible, .consoleHeader:focus-visible {
+      outline: 2px solid var(--accent); outline-offset: -2px; border-radius: var(--radius-sm);
+    }
+
     .previewPane { flex: 1; background: var(--preview-bg); min-height: 0; min-width: 0; display: flex; flex-direction: column; }
 
     /* == Tabs + Editor Toolbar == */
@@ -577,6 +584,10 @@
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 8a6 6 0 0111.47-2.4M14 8A6 6 0 012.53 10.4"/><path d="M14 2v4h-4M2 14v-4h4"/></svg>
       <span class="btn-label">Reset Preview</span>
     </button>
+    <button class="btn desktop-only" id="exportBtn" title="Download merged HTML as a standalone file">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2v8M4.5 6.5L8 10l3.5-3.5"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2"/></svg>
+      <span class="btn-label">Export</span>
+    </button>
     <button class="btn btn-icon desktop-only" id="resetBtn" title="Reset code to starter template">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 8a6 6 0 0111.47-2.4M14 8A6 6 0 012.53 10.4"/><path d="M14 2v4h-4M2 14v-4h4"/></svg>
     </button>
@@ -591,10 +602,10 @@
   <div class="wrap">
     <div class="editorPane">
       <div class="editor-top">
-        <div class="tabs">
-          <div class="tab active" data-tab="html">index.html</div>
-          <div class="tab" data-tab="css">style.css</div>
-          <div class="tab" data-tab="js">script.js</div>
+        <div class="tabs" role="tablist" aria-label="Editor files">
+          <div class="tab active" data-tab="html" role="tab" tabindex="0" aria-selected="true">index.html</div>
+          <div class="tab" data-tab="css" role="tab" tabindex="-1" aria-selected="false">style.css</div>
+          <div class="tab" data-tab="js" role="tab" tabindex="-1" aria-selected="false">script.js</div>
         </div>
         <div class="editor-actions">
           <button class="ed-btn" id="edCopy" title="Copy code" style="position:relative">
@@ -621,7 +632,7 @@
       </div>
 
       <div class="consolePane collapsed" id="consolePane">
-        <div class="consoleHeader" id="consoleHeader">
+        <div class="consoleHeader" id="consoleHeader" role="button" tabindex="0" aria-expanded="false" aria-controls="consoleBody" aria-label="Toggle console panel">
           <svg class="console-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 3l5.5 5-5.5 5"/></svg>
           <span class="console-title">Console</span>
           <span class="console-count" id="consoleMeta"></span>
@@ -640,7 +651,7 @@
       </div>
     </div>
 
-    <div class="divider" id="divider" aria-label="Resize"></div>
+    <div class="divider" id="divider" role="separator" aria-label="Resize editor and preview panes" aria-orientation="vertical" aria-valuemin="20" aria-valuemax="80" aria-valuenow="52" tabindex="0"></div>
 
     <div class="previewPane" id="previewPane">
       <div class="preview-header">Preview</div>
@@ -690,6 +701,10 @@
           </span>
           Auto-run
         </label>
+        <button class="btn" id="mobExport">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="width:14px;height:14px"><path d="M8 2v8M4.5 6.5L8 10l3.5-3.5"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2"/></svg>
+          Export HTML
+        </button>
         <button class="btn" id="mobResetPreview">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="width:14px;height:14px"><path d="M2 8a6 6 0 0111.47-2.4M14 8A6 6 0 012.53 10.4"/><path d="M14 2v4h-4M2 14v-4h4"/></svg>
           Reset Preview
@@ -721,7 +736,7 @@
   <div class="footer">
     <span>HTML Playground</span>
     <span class="footer-sep">&middot;</span>
-    <span>v1.3.0</span>
+    <span>v1.4.0</span>
   </div>
 
 <script>
@@ -733,6 +748,7 @@
   var runBtn = document.getElementById("runBtn");
   var resetBtn = document.getElementById("resetBtn");
   var resetPreviewBtn = document.getElementById("resetPreviewBtn");
+  var exportBtn = document.getElementById("exportBtn");
   var autorun = document.getElementById("autorun");
   var autorunMobile = document.getElementById("autorunMobile");
   var tabs = Array.from(document.querySelectorAll(".tab"));
@@ -765,6 +781,7 @@
   var mobConsoleBadge = document.getElementById("mobConsoleBadge");
   var mobMoreBtn = document.getElementById("mobMoreBtn");
   var mobMenuOverlay = document.getElementById("mobMenuOverlay");
+  var mobExport = document.getElementById("mobExport");
   var mobResetPreview = document.getElementById("mobResetPreview");
   var mobResetCode = document.getElementById("mobResetCode");
   var mobNewProject = document.getElementById("mobNewProject");
@@ -819,11 +836,19 @@
     state.consoleOpen = open;
     consolePane.classList.toggle("expanded", open);
     consolePane.classList.toggle("collapsed", !open);
+    consoleHeader.setAttribute("aria-expanded", open ? "true" : "false");
     saveState();
   }
   consoleHeader.addEventListener("click", function(e) {
     if (e.target.closest(".console-actions")) return;
     setConsoleOpen(!state.consoleOpen);
+  });
+  consoleHeader.addEventListener("keydown", function(e) {
+    if (e.target.closest(".console-actions")) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      setConsoleOpen(!state.consoleOpen);
+    }
   });
   setConsoleOpen(!!state.consoleOpen);
 
@@ -844,7 +869,12 @@
 
   function setActiveTab(tab) {
     state.activeTab = tab;
-    tabs.forEach(function(t) { t.classList.toggle("active", t.dataset.tab === tab); });
+    tabs.forEach(function(t) {
+      var active = t.dataset.tab === tab;
+      t.classList.toggle("active", active);
+      t.setAttribute("aria-selected", active ? "true" : "false");
+      t.setAttribute("tabindex", active ? "0" : "-1");
+    });
     editor.value = state[tab] || "";
     saveState();
   }
@@ -1024,13 +1054,16 @@
     if (e.key === "s") { e.preventDefault(); }
   });
 
-  // Tab inserts spaces
+  // Tab inserts spaces (via insertText so the undo stack survives)
   editor.addEventListener("keydown", function(e) {
     if (e.key === "Tab") {
       e.preventDefault();
-      var s = editor.selectionStart, n = editor.selectionEnd;
-      editor.value = editor.value.substring(0, s) + "  " + editor.value.substring(n);
-      editor.selectionStart = editor.selectionEnd = s + 2;
+      var inserted = false;
+      try { inserted = document.execCommand("insertText", false, "  "); } catch(err) {}
+      if (!inserted) {
+        // Fallback: setRangeText preserves selection but not undo history
+        editor.setRangeText("  ", editor.selectionStart, editor.selectionEnd, "end");
+      }
       state[state.activeTab] = editor.value;
       saveState();
     }
@@ -1052,7 +1085,9 @@
 
   // Build
   function buildCsp() {
-    return "default-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; script-src 'unsafe-inline' https:; style-src 'unsafe-inline' https:; img-src data: blob: https:; font-src data: https:; connect-src https:; media-src blob: https:; frame-src https:";
+    // Note: frame-ancestors is omitted — it is ignored in meta-delivered CSP
+    // per spec; framing protection comes from the iframe sandbox attribute.
+    return "default-src 'none'; base-uri 'none'; form-action 'none'; script-src 'unsafe-inline' https:; style-src 'unsafe-inline' https:; img-src data: blob: https:; font-src data: https:; connect-src https:; media-src blob: https:; frame-src https:";
   }
 
   function consoleBridge() {
@@ -1072,27 +1107,45 @@
       '</scr' + 'ipt>';
   }
 
+  // Prevent user code from breaking out of the injected <style>/<script>
+  // wrappers. "<\/" is identical to "</" inside JS strings, and "\/" is a
+  // valid escape inside CSS strings, so semantics are preserved.
+  function escapeStyleClose(css) {
+    return String(css || "").replace(/<\/(style)/gi, "<\\/$1");
+  }
+  function escapeScriptClose(js) {
+    return String(js || "").replace(/<\/(script)/gi, "<\\/$1");
+  }
+
   function merge(html, css, js) {
     var csp = buildCsp();
     var bridge = consoleBridge();
+    var safeCss = escapeStyleClose(css);
+    var safeJs = escapeScriptClose(js);
     var hasHtml = /<html[\s>]/i.test(html || "");
     var hasHead = /<head[\s>]/i.test(html || "");
     var hasBody = /<body[\s>]/i.test(html || "");
 
+    // NOTE: every replacement containing user content uses a function
+    // replacer. A plain replacement string would let "$&", "$`", "$'" etc.
+    // in user code trigger String.replace() substitution patterns.
     if (hasHtml) {
       var o = String(html || "");
       if (!hasHead) o = o.replace(/<html[\s\S]*?>/i, function(m) { return m + "\n<head></head>"; });
       if (!hasBody) o = o.replace(/<\/head>/i, "</head>\n<body></body>");
-      o = o.replace(/<\/head>/i,
-        '  <meta http-equiv="Content-Security-Policy" content="' + csp + '">\n' +
-        '  <meta name="viewport" content="width=device-width,initial-scale=1"/>\n' +
-        '  <style>\n' + (css || "") + '\n  </style>\n</head>');
+      o = o.replace(/<\/head>/i, function() {
+        return '  <meta http-equiv="Content-Security-Policy" content="' + csp + '">\n' +
+          '  <meta name="viewport" content="width=device-width,initial-scale=1"/>\n' +
+          '  <style>\n' + safeCss + '\n  </style>\n</head>';
+      });
       o = o.replace(/<body([\s\S]*?)>/i, function(m) { return m + "\n" + bridge + "\n"; });
-      o = o.replace(/<\/body>/i, '  <scr' + 'ipt>\n' + (js || "") + '\n  </scr' + 'ipt>\n</body>');
+      o = o.replace(/<\/body>/i, function() {
+        return '  <scr' + 'ipt>\n' + safeJs + '\n  </scr' + 'ipt>\n</body>';
+      });
       return o;
     }
 
-    return '<!doctype html><html><head><meta charset="utf-8"/><meta http-equiv="Content-Security-Policy" content="' + csp + '"><meta name="viewport" content="width=device-width,initial-scale=1"/><style>' + (css || "") + '</style></head><body>' + bridge + (html || "") + '<scr' + 'ipt>' + (js || "") + '</scr' + 'ipt></body></html>';
+    return '<!doctype html><html><head><meta charset="utf-8"/><meta http-equiv="Content-Security-Policy" content="' + csp + '"><meta name="viewport" content="width=device-width,initial-scale=1"/><style>' + safeCss + '</style></head><body>' + bridge + (html || "") + '<scr' + 'ipt>' + safeJs + '</scr' + 'ipt></body></html>';
   }
 
   function run() {
@@ -1102,8 +1155,55 @@
     if (iframe) iframe.srcdoc = merge(state.html, state.css, state.js);
   }
 
-  // Tabs
-  tabs.forEach(function(t) { t.addEventListener("click", function() { setActiveTab(t.dataset.tab); }); });
+  // == Export ==
+  // Like merge(), but without the playground's CSP and console bridge —
+  // a clean standalone document of just the user's code.
+  function buildExport() {
+    var html = state.html || "", safeCss = escapeStyleClose(state.css), safeJs = escapeScriptClose(state.js);
+    if (/<html[\s>]/i.test(html)) {
+      var o = String(html);
+      if (!/<head[\s>]/i.test(o)) o = o.replace(/<html[\s\S]*?>/i, function(m) { return m + "\n<head></head>"; });
+      if (!/<body[\s>]/i.test(o)) o = o.replace(/<\/head>/i, "</head>\n<body></body>");
+      o = o.replace(/<\/head>/i, function() { return '  <style>\n' + safeCss + '\n  </style>\n</head>'; });
+      o = o.replace(/<\/body>/i, function() { return '  <scr' + 'ipt>\n' + safeJs + '\n  </scr' + 'ipt>\n</body>'; });
+      return o;
+    }
+    return '<!doctype html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><style>' + safeCss + '</style></head><body>' + html + '<scr' + 'ipt>' + safeJs + '</scr' + 'ipt></body></html>';
+  }
+  function exportHtml() {
+    var blob = new Blob([buildExport()], { type: "text/html" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "playground.html";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+    addLog("info", ["Exported playground.html"]);
+  }
+  exportBtn.addEventListener("click", exportHtml);
+  mobExport.addEventListener("click", function() {
+    mobMenuOverlay.classList.remove("visible");
+    exportHtml();
+  });
+
+  // Tabs (click + keyboard: Enter/Space activate, arrows move)
+  tabs.forEach(function(t, i) {
+    t.addEventListener("click", function() { setActiveTab(t.dataset.tab); });
+    t.addEventListener("keydown", function(e) {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        setActiveTab(t.dataset.tab);
+      } else if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+        e.preventDefault();
+        var dir = e.key === "ArrowRight" ? 1 : -1;
+        var next = tabs[(i + dir + tabs.length) % tabs.length];
+        setActiveTab(next.dataset.tab);
+        next.focus();
+      }
+    });
+  });
 
   // Editing
   var tmr = null;
@@ -1136,9 +1236,27 @@
     } else {
       root.style.setProperty("--left", c + "%");
     }
+    divider.setAttribute("aria-valuenow", String(Math.round(c)));
+    divider.setAttribute("aria-orientation", isVertical() ? "horizontal" : "vertical");
     saveState();
   }
   setLeftPct(state.leftPct || 52);
+
+  // Keyboard resize: arrow keys nudge the divider by 2%
+  divider.addEventListener("keydown", function(e) {
+    var delta = 0;
+    if (isVertical()) {
+      if (e.key === "ArrowUp") delta = -2;
+      if (e.key === "ArrowDown") delta = 2;
+    } else {
+      if (e.key === "ArrowLeft") delta = -2;
+      if (e.key === "ArrowRight") delta = 2;
+    }
+    if (delta) {
+      e.preventDefault();
+      setLeftPct((state.leftPct || 52) + delta);
+    }
+  });
 
   var rTmr = null;
   window.addEventListener("resize", function() {
