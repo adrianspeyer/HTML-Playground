@@ -5,9 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <meta name="robots" content="noindex, nofollow" />
   <title>HTML Playground</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
       --divider: 6px;
@@ -339,7 +336,15 @@
       font-family: var(--font-mono);
       border-bottom: 1px solid var(--border); background: var(--panel);
     }
+    .preview-header .pv-spacer { flex: 1; }
+    .preview-header .ed-btn { width: 28px; height: 28px; }
     iframe { flex: 1; width: 100%; border: 0; background: var(--iframe-bg); }
+
+    /* Fullscreen preview (iPad / desktop via Fullscreen API) */
+    .previewPane:fullscreen,
+    .previewPane:-webkit-full-screen { background: var(--iframe-bg); }
+    .previewPane:fullscreen .preview-header,
+    .previewPane:-webkit-full-screen .preview-header { display: flex; }
 
     /* == Footer == */
     .footer {
@@ -366,6 +371,30 @@
       content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
       border: 4px solid transparent; border-top-color: var(--text);
     }
+
+    /* == Coding-key accessory bar == */
+    .key-bar {
+      display: none;
+      position: fixed; left: 0; right: 0; bottom: 0;
+      z-index: 200;
+      gap: 6px; padding: 6px 8px;
+      padding-left: calc(8px + env(safe-area-inset-left, 0px));
+      padding-right: calc(8px + env(safe-area-inset-right, 0px));
+      background: var(--panel); border-top: 1px solid var(--border);
+      box-shadow: 0 -2px 10px rgba(0,0,0,.08);
+      overflow-x: auto; overflow-y: hidden;
+      -webkit-overflow-scrolling: touch; white-space: nowrap;
+    }
+    .key-bar.visible { display: flex; }
+    .key {
+      flex: 0 0 auto; min-width: 40px; height: 38px; padding: 0 10px;
+      border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
+      background: var(--surface); color: var(--text);
+      font-family: var(--font-mono); font-size: 15px; font-weight: 600;
+      cursor: pointer; touch-action: manipulation;
+      user-select: none; -webkit-user-select: none;
+    }
+    .key:active { background: var(--surface-active); }
 
     /* == Confirm / Menu dialog == */
     .confirm-overlay {
@@ -560,6 +589,7 @@
   </style>
 </head>
 <body class="mobile-view-editor">
+  <input type="file" id="fileInput" accept=".html,.htm,text/html" aria-hidden="true" tabindex="-1" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);border:0" />
   <header>
     <div class="logo">
       <div class="logo-mark">&lt;/&gt;</div>
@@ -583,6 +613,10 @@
     <button class="btn desktop-only" id="resetPreviewBtn" title="Hard-reset preview (kills runaway JS)">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 8a6 6 0 0111.47-2.4M14 8A6 6 0 012.53 10.4"/><path d="M14 2v4h-4M2 14v-4h4"/></svg>
       <span class="btn-label">Reset Preview</span>
+    </button>
+    <button class="btn desktop-only" id="importBtn" title="Open an HTML file from your device">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4.5A1.5 1.5 0 013.5 3h3l1.5 1.5h4.5A1.5 1.5 0 0114 6v.5"/><path d="M1.8 7h12.4l-1.3 5.2a1 1 0 01-.97.8H3.07a1 1 0 01-.97-.8z"/></svg>
+      <span class="btn-label">Import</span>
     </button>
     <button class="btn desktop-only" id="exportBtn" title="Download merged HTML as a standalone file">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M8 2v8M4.5 6.5L8 10l3.5-3.5"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2"/></svg>
@@ -628,7 +662,7 @@
       <div class="tab-divider"></div>
 
       <div class="editorArea">
-        <textarea id="editor" spellcheck="false"></textarea>
+        <textarea id="editor" spellcheck="false" autocorrect="off" autocapitalize="off" autocomplete="off" enterkeyhint="enter"></textarea>
       </div>
 
       <div class="consolePane collapsed" id="consolePane">
@@ -654,7 +688,17 @@
     <div class="divider" id="divider" role="separator" aria-label="Resize editor and preview panes" aria-orientation="vertical" aria-valuemin="20" aria-valuemax="80" aria-valuenow="52" tabindex="0"></div>
 
     <div class="previewPane" id="previewPane">
-      <div class="preview-header">Preview</div>
+      <div class="preview-header">
+        <span>Preview</span>
+        <span class="pv-spacer"></span>
+        <button class="ed-btn" id="fullscreenBtn" title="Fullscreen preview" aria-label="Toggle fullscreen preview" aria-pressed="false">
+          <svg class="fs-enter" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2H3a1 1 0 00-1 1v3M10 2h3a1 1 0 011 1v3M6 14H3a1 1 0 01-1-1v-3M10 14h3a1 1 0 001-1v-3"/></svg>
+          <svg class="fs-exit" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M2 6h3a1 1 0 001-1V2M14 6h-3a1 1 0 01-1-1V2M2 10h3a1 1 0 011 1v3M14 10h-3a1 1 0 00-1 1v3"/></svg>
+        </button>
+      </div>
+      <!-- SECURITY: sandbox is "allow-scripts" ONLY. Never add allow-same-origin:
+           on a shared github.io origin it would let preview code read/wipe the
+           localStorage and cookies of every project on the domain. -->
       <iframe id="preview" sandbox="allow-scripts"></iframe>
     </div>
   </div>
@@ -689,6 +733,25 @@
     </button>
   </div>
 
+  <!-- Coding-key accessory bar (touch devices, shown above the on-screen keyboard) -->
+  <div class="key-bar" id="keyBar" role="toolbar" aria-label="Coding keys" aria-hidden="true">
+    <button class="key" data-ins="  " aria-label="Tab (two spaces)">&#8677;</button>
+    <button class="key" data-pair="()">( )</button>
+    <button class="key" data-pair="{}">{ }</button>
+    <button class="key" data-pair="[]">[ ]</button>
+    <button class="key" data-pair="&lt;&gt;">&lt; &gt;</button>
+    <button class="key" data-ins="=">=</button>
+    <button class="key" data-ins=";">;</button>
+    <button class="key" data-ins=":">:</button>
+    <button class="key" data-ins="/">/</button>
+    <button class="key" data-ins=".">.</button>
+    <button class="key" data-pair="&quot;&quot;">&quot; &quot;</button>
+    <button class="key" data-pair="''">' '</button>
+    <button class="key" data-ins="-">-</button>
+    <button class="key" data-ins="_">_</button>
+    <button class="key" data-ins="$">$</button>
+  </div>
+
   <!-- Mobile More Menu -->
   <div class="confirm-overlay" id="mobMenuOverlay">
     <div class="confirm-box" style="width:280px">
@@ -701,6 +764,10 @@
           </span>
           Auto-run
         </label>
+        <button class="btn" id="mobImport">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M2 4.5A1.5 1.5 0 013.5 3h3l1.5 1.5h4.5A1.5 1.5 0 0114 6v.5"/><path d="M1.8 7h12.4l-1.3 5.2a1 1 0 01-.97.8H3.07a1 1 0 01-.97-.8z"/></svg>
+          Import HTML
+        </button>
         <button class="btn" id="mobExport">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="width:14px;height:14px"><path d="M8 2v8M4.5 6.5L8 10l3.5-3.5"/><path d="M2 11v2a1 1 0 001 1h10a1 1 0 001-1v-2"/></svg>
           Export HTML
@@ -724,8 +791,8 @@
   <!-- Confirm dialog -->
   <div class="confirm-overlay" id="confirmOverlay">
     <div class="confirm-box">
-      <h3>New Project</h3>
-      <p>This will clear all code in every tab and reset the preview. Any unsaved work will be lost.</p>
+      <h3 id="confirmTitle">New Project</h3>
+      <p id="confirmText">This will clear all code in every tab and reset the preview. Any unsaved work will be lost.</p>
       <div class="confirm-actions">
         <button class="btn" id="confirmCancel">Cancel</button>
         <button class="btn btn-danger" id="confirmOk">Clear Everything</button>
@@ -736,7 +803,7 @@
   <div class="footer">
     <span>HTML Playground</span>
     <span class="footer-sep">&middot;</span>
-    <span>v1.4.0</span>
+    <span>v1.6.0</span>
   </div>
 
 <script>
@@ -744,11 +811,16 @@
   "use strict";
 
   var LS_KEY = "html_playground_v5";
+  var saveWarned = false;
   var editor = document.getElementById("editor");
   var runBtn = document.getElementById("runBtn");
   var resetBtn = document.getElementById("resetBtn");
   var resetPreviewBtn = document.getElementById("resetPreviewBtn");
   var exportBtn = document.getElementById("exportBtn");
+  var importBtn = document.getElementById("importBtn");
+  var fileInput = document.getElementById("fileInput");
+  var fullscreenBtn = document.getElementById("fullscreenBtn");
+  var previewPane = document.getElementById("previewPane");
   var autorun = document.getElementById("autorun");
   var autorunMobile = document.getElementById("autorunMobile");
   var tabs = Array.from(document.querySelectorAll(".tab"));
@@ -772,6 +844,8 @@
   var confirmOverlay = document.getElementById("confirmOverlay");
   var confirmCancel = document.getElementById("confirmCancel");
   var confirmOk = document.getElementById("confirmOk");
+  var confirmTitle = document.getElementById("confirmTitle");
+  var confirmText = document.getElementById("confirmText");
 
   // Mobile
   var mobEditorBtn = document.getElementById("mobEditorBtn");
@@ -782,6 +856,8 @@
   var mobMoreBtn = document.getElementById("mobMoreBtn");
   var mobMenuOverlay = document.getElementById("mobMenuOverlay");
   var mobExport = document.getElementById("mobExport");
+  var mobImport = document.getElementById("mobImport");
+  var keyBar = document.getElementById("keyBar");
   var mobResetPreview = document.getElementById("mobResetPreview");
   var mobResetCode = document.getElementById("mobResetCode");
   var mobNewProject = document.getElementById("mobNewProject");
@@ -864,7 +940,17 @@
         autorun: autorun.checked, theme: state.theme,
         consoleOpen: state.consoleOpen, mobileView: state.mobileView
       }));
-    } catch(e) {}
+    } catch(e) {
+      // iOS Private Browsing throws; storage pressure / quota can too.
+      // Warn once so work-loss isn't silent — Export is the escape hatch.
+      // (addLog may not be ready during very early init; if so, retry next save.)
+      if (!saveWarned) {
+        try {
+          addLog("warn", ["Couldn't save to this browser (private mode or storage full). Your code won't persist on reload \u2014 use Export to keep it."]);
+          saveWarned = true;
+        } catch(_) {}
+      }
+    }
   }
 
   function setActiveTab(tab) {
@@ -925,7 +1011,7 @@
   });
   mobNewProject.addEventListener("click", function() {
     mobMenuOverlay.classList.remove("visible");
-    confirmOverlay.classList.add("visible");
+    newProject();
   });
 
   setMobileView(state.mobileView || "editor");
@@ -1026,25 +1112,49 @@
     saveState(); editor.focus();
   });
 
-  // New project
-  edNew.addEventListener("click", function() { confirmOverlay.classList.add("visible"); });
-  confirmCancel.addEventListener("click", function() { confirmOverlay.classList.remove("visible"); });
+  // == Confirm dialog (generalized) ==
+  var pendingConfirm = null;
+  function closeConfirm() { confirmOverlay.classList.remove("visible"); pendingConfirm = null; }
+  function openConfirm(opts) {
+    confirmTitle.textContent = opts.title;
+    confirmText.textContent = opts.text;
+    confirmOk.textContent = opts.ok || "OK";
+    confirmOk.classList.toggle("btn-danger", opts.danger !== false);
+    pendingConfirm = opts.onOk || null;
+    confirmOverlay.classList.add("visible");
+  }
+  confirmCancel.addEventListener("click", closeConfirm);
   confirmOk.addEventListener("click", function() {
-    confirmOverlay.classList.remove("visible");
-    state.html = ""; state.css = ""; state.js = "";
-    setActiveTab("html");
-    autorun.checked = false; autorunMobile.checked = false;
-    clearConsole(); saveState(); resetPreview();
+    var fn = pendingConfirm;
+    closeConfirm();
+    if (fn) fn();
   });
   confirmOverlay.addEventListener("click", function(e) {
-    if (e.target === confirmOverlay) confirmOverlay.classList.remove("visible");
+    if (e.target === confirmOverlay) closeConfirm();
   });
   document.addEventListener("keydown", function(e) {
     if (e.key === "Escape") {
-      if (confirmOverlay.classList.contains("visible")) confirmOverlay.classList.remove("visible");
+      if (confirmOverlay.classList.contains("visible")) closeConfirm();
       if (mobMenuOverlay.classList.contains("visible")) mobMenuOverlay.classList.remove("visible");
     }
   });
+
+  // New project (clear all tabs to empty)
+  function newProject() {
+    openConfirm({
+      title: "New Project",
+      text: "This will clear all code in every tab and reset the preview. Any unsaved work will be lost.",
+      ok: "Clear Everything",
+      danger: true,
+      onOk: function() {
+        state.html = ""; state.css = ""; state.js = "";
+        setActiveTab("html");
+        autorun.checked = false; autorunMobile.checked = false;
+        clearConsole(); saveState(); resetPreview();
+      }
+    });
+  }
+  edNew.addEventListener("click", newProject);
 
   // Keyboard shortcuts
   document.addEventListener("keydown", function(e) {
@@ -1069,6 +1179,54 @@
     }
   });
 
+  // == Coding-key accessory bar (touch only) ==
+  // Inserts code characters above the on-screen keyboard. Buttons use
+  // pointerdown + preventDefault so the textarea keeps focus (keyboard stays up).
+  var coarse = !!(window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
+  var editorFocused = false;
+
+  function insertAtCursor(text, caretBack) {
+    editor.focus();
+    var ok = false;
+    try { ok = document.execCommand("insertText", false, text); } catch (e) {}
+    if (!ok) editor.setRangeText(text, editor.selectionStart, editor.selectionEnd, "end");
+    if (caretBack) {
+      var p = editor.selectionStart - caretBack;
+      if (p >= 0) { editor.selectionStart = p; editor.selectionEnd = p; }
+    }
+    state[state.activeTab] = editor.value;
+    saveState();
+  }
+
+  function updateKeyBar() {
+    var vv = window.visualViewport;
+    // Gap between layout and visual viewport ≈ on-screen keyboard height.
+    var gap = vv ? (window.innerHeight - vv.height - vv.offsetTop) : 0;
+    // Only show on touch, while editing, and when a soft keyboard is actually up
+    // (gap >= 80 rules out hardware keyboards, where the keys aren't needed).
+    var up = coarse && editorFocused && gap >= 80;
+    keyBar.classList.toggle("visible", up);
+    keyBar.setAttribute("aria-hidden", up ? "false" : "true");
+    if (up) keyBar.style.bottom = gap + "px";
+  }
+
+  keyBar.addEventListener("pointerdown", function(e) {
+    var btn = e.target.closest(".key");
+    if (!btn) return;
+    e.preventDefault();   // keep focus on the textarea
+    if (btn.dataset.pair != null) {
+      insertAtCursor(btn.dataset.pair, btn.dataset.pair.length - 1);
+    } else if (btn.dataset.ins != null) {
+      insertAtCursor(btn.dataset.ins, 0);
+    }
+  });
+  editor.addEventListener("focus", function() { editorFocused = true; updateKeyBar(); });
+  editor.addEventListener("blur", function() { editorFocused = false; updateKeyBar(); });
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", updateKeyBar);
+    window.visualViewport.addEventListener("scroll", updateKeyBar);
+  }
+
   // Preview
   function getPreviewIframe() { return document.getElementById("preview"); }
   function resetPreview() {
@@ -1076,6 +1234,7 @@
     if (!old) return;
     var next = document.createElement("iframe");
     next.id = "preview";
+    // SECURITY: keep "allow-scripts" only — never add allow-same-origin (see iframe markup).
     next.sandbox = "allow-scripts";
     next.style.cssText = "flex:1;width:100%;border:0;background:var(--iframe-bg)";
     old.replaceWith(next);
@@ -1187,6 +1346,96 @@
     mobMenuOverlay.classList.remove("visible");
     exportHtml();
   });
+
+  // == Import HTML file ==
+  // Loads a self-contained .html file whole into the HTML tab (CSS/JS tabs
+  // cleared) so the existing run/merge path renders it inside the sandbox.
+  // The Code view then shows the full imported source; the existing CSP and
+  // console bridge still wrap the preview.
+  var IMPORT_MAX = 2 * 1024 * 1024;       // 2 MB — above this it loads but may not persist
+  var IMPORT_HARD_MAX = 15 * 1024 * 1024; // 15 MB — refuse outright (would freeze the editor)
+  function isStarterOrEmpty() {
+    var empty = !state.html && !state.css && !state.js;
+    var starterLoaded = state.html === starter.html && state.css === starter.css && state.js === starter.js;
+    return empty || starterLoaded;
+  }
+  function pickFile() {
+    fileInput.value = "";   // allow re-importing the same file name
+    fileInput.click();
+  }
+  function triggerImport() {
+    if (isStarterOrEmpty()) { pickFile(); return; }
+    openConfirm({
+      title: "Import HTML",
+      text: "This replaces your current code with the imported file. Any unsaved work will be lost.",
+      ok: "Import & Replace",
+      danger: false,
+      onOk: pickFile
+    });
+  }
+  function loadImportedHtml(text, name) {
+    state.html = text;
+    state.css = "";
+    state.js = "";
+    setActiveTab("html");
+    saveState();
+    run();
+    addLog("info", ["Imported " + (name || "file") + " (" + text.length + " chars)"]);
+    if (text.length > IMPORT_MAX) addLog("warn", ["Large file \u2014 it may not persist across reloads."]);
+    // Phones / iPad-portrait: jump straight to the full-screen preview.
+    if (isMobileWidth()) setMobileView("preview");
+  }
+  fileInput.addEventListener("change", function() {
+    var f = fileInput.files && fileInput.files[0];
+    if (!f) return;
+    if (f.size > IMPORT_HARD_MAX) {
+      addLog("error", ["File too large to import (" + Math.round(f.size / 1048576) + " MB). Limit is 15 MB."]);
+      fileInput.value = "";
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function() { loadImportedHtml(String(reader.result || ""), f.name); };
+    reader.onerror = function() { addLog("error", ["Could not read file: " + f.name]); };
+    reader.readAsText(f);
+  });
+  importBtn.addEventListener("click", triggerImport);
+  mobImport.addEventListener("click", function() {
+    mobMenuOverlay.classList.remove("visible");
+    triggerImport();
+  });
+
+  // == Fullscreen preview ==
+  // Real OS-level fullscreen via the Fullscreen API (iPad + desktop). iPhone
+  // Safari has no element-fullscreen, so fall back to the CSS full-screen view.
+  function fsElement() {
+    return document.fullscreenElement || document.webkitFullscreenElement || null;
+  }
+  function enterFullscreen(el) {
+    var req = el.requestFullscreen || el.webkitRequestFullscreen;
+    if (req) { try { req.call(el); return true; } catch (e) {} }
+    if (isMobileWidth()) { setMobileView("preview"); return true; }
+    return false;
+  }
+  function exitFullscreen() {
+    var ex = document.exitFullscreen || document.webkitExitFullscreen;
+    if (ex) { try { ex.call(document); } catch (e) {} }
+  }
+  function toggleFullscreen() {
+    if (fsElement()) { exitFullscreen(); return; }
+    enterFullscreen(previewPane);
+  }
+  function syncFsButton() {
+    var on = fsElement() === previewPane;
+    fullscreenBtn.setAttribute("aria-pressed", on ? "true" : "false");
+    fullscreenBtn.title = on ? "Exit fullscreen" : "Fullscreen preview";
+    var enter = fullscreenBtn.querySelector(".fs-enter");
+    var exit = fullscreenBtn.querySelector(".fs-exit");
+    if (enter) enter.style.display = on ? "none" : "";
+    if (exit) exit.style.display = on ? "" : "none";
+  }
+  fullscreenBtn.addEventListener("click", toggleFullscreen);
+  document.addEventListener("fullscreenchange", syncFsButton);
+  document.addEventListener("webkitfullscreenchange", syncFsButton);
 
   // Tabs (click + keyboard: Enter/Space activate, arrows move)
   tabs.forEach(function(t, i) {

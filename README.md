@@ -2,7 +2,7 @@
 
 A lightweight, secure, single-file HTML playground hosted via GitHub Pages.
 
-Split editor and live preview environment similar to online HTML compilers — fully self-contained, open source, and sandboxed for safety. Mobile-first design with full-screen Code/Preview toggle on phones and tablets.
+Split editor and live preview environment similar to online HTML compilers — fully self-contained (no third-party requests, not even web fonts), open source, and sandboxed for safety. Mobile-first design with full-screen Code/Preview toggle on phones and tablets.
 
 **[Live Demo](https://adrianspeyer.github.io/html-playground/)**
 
@@ -20,6 +20,8 @@ Split editor and live preview environment similar to online HTML compilers — f
 - LocalStorage persistence for code and preferences
 - Hard **Reset Preview** to kill runaway scripts
 - **Export** — download your merged HTML/CSS/JS as a standalone `.html` file
+- **Import** — open an `.html` file from your device (Files / iCloud Drive on iPad) and view it whole in the sandbox; the Code view shows the full source
+- **Fullscreen preview** — pop the preview to true OS-level fullscreen on iPad and desktop (falls back to full-screen Preview view on iPhone)
 - Keyboard accessible — tabs, console, and pane divider all operable without a mouse
 - Single `index.html` file — no build step, no backend
 
@@ -57,15 +59,21 @@ The preview runs inside a sandboxed iframe with restricted capabilities.
 | Directive | Value | Purpose |
 |-----------|-------|---------|
 | `default-src` | `'none'` | Deny everything by default |
+| `base-uri` | `'none'` | Block `<base>` tag hijacking of relative URLs |
+| `form-action` | `'none'` | Block all form submissions |
 | `script-src` | `'unsafe-inline' https:` | Allow inline scripts and HTTPS CDN scripts |
 | `style-src` | `'unsafe-inline' https:` | Allow inline styles and HTTPS CDN stylesheets |
 | `img-src` | `data: blob: https:` | Allow images from data URIs, blobs, and HTTPS |
+| `font-src` | `data: https:` | Allow fonts from data URIs and HTTPS |
 | `connect-src` | `https:` | Allow fetch/XHR to HTTPS endpoints |
-| `form-action` | `'none'` | Block all form submissions |
+| `media-src` | `blob: https:` | Allow audio/video from blobs and HTTPS |
+| `frame-src` | `https:` | Allow the preview to embed HTTPS iframes (e.g. YouTube) |
 
-> Note: `frame-ancestors` is intentionally **not** included — the CSP is delivered via a `<meta>` tag, and per spec, `frame-ancestors` is ignored in meta-delivered policies. Framing protection comes from the iframe `sandbox` attribute instead.
+> Note: `frame-ancestors` is intentionally **not** included — the CSP is delivered via a `<meta>` tag, and per spec, `frame-ancestors` is ignored in meta-delivered policies. Protection against the preview being framed comes from the iframe `sandbox` attribute instead. (`frame-src`, by contrast, controls what the preview itself is allowed to embed, and is permissive by design so demos can pull in HTTPS embeds.)
 
 **Console bridge security:** The `postMessage` listener verifies that incoming messages originate from the preview iframe `contentWindow` before processing, preventing spoofed console messages from other sources.
+
+**Hosting & shared origin (GitHub Pages):** All `*.github.io` user sites share a single origin, so this page's `localStorage`/cookies live in the same bucket as every other project on the account. The preview is protected from that shared storage because its iframe is sandboxed with `allow-scripts` **only** — no `allow-same-origin` — giving it a null origin that cannot read the host origin's storage. **This is the one invariant never to break:** adding `allow-same-origin` would let preview code read and wipe the `localStorage` and cookies of every project on the domain. The `allow-scripts`-only sandbox also blocks top-level navigation (no redirecting the visitor's tab), popups, and form submission. GitHub Pages can't set HTTP security headers, so the page can be framed by others; for an unauthenticated, stateless playground the clickjacking impact is negligible, and no host-page injection surface exists (no URL params are read).
 
 ### Known Tradeoffs
 
@@ -107,6 +115,12 @@ The console captures log, warn, error, and unhandled promise rejections from the
 
 Click the sun/moon toggle in the header to switch between light and dark themes. The preference is saved to `localStorage` and restored on next visit. Theming is implemented entirely through CSS custom properties.
 
+### Import & Fullscreen
+
+**Import** reads a single `.html` file with `FileReader` and places its full text into the HTML tab, clearing the CSS and JS tabs (an imported document already carries its own `<style>`/`<script>`). It then runs through the normal merge path, so the playground's CSP and console bridge still wrap the imported document — useful for safely opening and interacting with an HTML file on an iPad. Because the same CSP applies, an imported page that pulls resources over plain `http:` or relies on directives the policy denies may render differently than it would standalone; use **Export** for an unwrapped copy.
+
+**Fullscreen** calls `requestFullscreen()` on the preview pane. On iPhone Safari (no element-fullscreen) it falls back to the full-screen Preview view. The Preview header — including the exit control — stays visible inside fullscreen.
+
 ---
 
 ## Reset Preview
@@ -136,11 +150,37 @@ This is intentionally a pure client-side tool.
 
 ## Project Structure
 
-The entire application is a single `index.html` file plus this README. Single file by design.
+The entire application is a single `index.html` file plus this README — no build step, no backend, and no third-party requests at runtime. The fonts use a native stack (San Francisco / SF Mono on Apple devices, system UI elsewhere), with `DM Sans` / `JetBrains Mono` kept first so they're used if installed. Single file by design.
 
 ---
 
 ## Changelog
+
+### v1.6.0
+
+**iPad / touch development**
+
+- **Fixed silent code corruption on iOS** — the editor now sets `autocorrect`, `autocapitalize`, and `autocomplete` to `off`. Previously iOS smart-punctuation could turn a straight `"` into a curly `"` and autocapitalize line starts, silently breaking code.
+- **Coding-key accessory bar** — on touch devices, a horizontally-scrollable bar of code keys (Tab, `( )`, `{ }`, `[ ]`, `< >`, `=`, `;`, `:`, `/`, `.`, quotes, `-`, `_`, `$`) appears above the on-screen keyboard. Bracket and quote keys insert as pairs with the caret placed between them. It rides above the keyboard via the VisualViewport API and stays hidden when a hardware keyboard is attached.
+
+**Hardening**
+
+- **Self-hosted typography** — removed the Google Fonts hotlink. No third-party requests at runtime, no visitor-IP leak to Google, and the "self-contained" claim is now literally true. Falls back to native system fonts (which on iPad/Mac are San Francisco and SF Mono).
+- **Visible save failures** — `localStorage` write failures (iOS Private Browsing, storage pressure) now surface a one-time console warning pointing to Export, instead of being swallowed silently.
+- **Import size guard** — files above 15 MB are refused before reading, so a huge file can't freeze the editor.
+- **`allow-same-origin` guard comments** — both sandbox assignments carry an explicit warning never to add `allow-same-origin`, since on a shared `github.io` origin it would expose every project's storage on the domain.
+
+### v1.5.0
+
+**New**
+
+- **Import HTML** — open an `.html` / `.htm` file from your device via the **Import** button (desktop header) or the mobile **More** menu. The file loads whole into the HTML tab (CSS/JS tabs are cleared, since an imported document is self-contained), runs immediately inside the sandbox, and on phones / iPad-portrait jumps straight to the full-screen preview. The Code view then shows the full imported source. Importing over unsaved work (anything other than the starter template) asks for confirmation first.
+- **Fullscreen preview** — a fullscreen toggle in the Preview header uses the Fullscreen API for true OS-level fullscreen on iPad and desktop. iPhone Safari has no element-fullscreen, so it falls back to the existing full-screen Preview view. This covers iPad **landscape** (1024px), where the mobile full-screen toggle does not apply.
+
+**Fixes / internal**
+
+- **Docs ↔ code CSP sync** — the README Security Model table now matches the policy actually emitted by `buildCsp()`, including the previously-undocumented `base-uri 'none'`, `font-src`, `media-src`, and `frame-src` directives, with clarified `frame-src` vs `frame-ancestors` wording.
+- **Generalized confirm dialog** — the confirmation modal is now reusable (title/body/button text are set per action) and drives both New Project and Import-over-unsaved-work, instead of being hard-wired to a single action.
 
 ### v1.4.0
 
