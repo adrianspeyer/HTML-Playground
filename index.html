@@ -217,7 +217,12 @@
 
     /* == Tabs + Editor Toolbar == */
     .editor-top { display: flex; align-items: flex-end; padding: 8px 10px 0; }
-    .tabs { display: flex; gap: 2px; flex: 1; min-width: 0; }
+    .tabs {
+      display: flex; gap: 2px; flex: 1; min-width: 0;
+      overflow-x: auto; overflow-y: hidden;
+      scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
     .tab {
       padding: 8px 14px; border-radius: var(--radius-sm) var(--radius-sm) 0 0;
       cursor: pointer; font-family: var(--font-mono);
@@ -462,9 +467,11 @@
 
       .consolePane.expanded { max-height: 50%; }
 
-      .editor-top { padding: 4px 8px 0; }
+      .editor-top { padding: 4px 6px 0; }
       .tab { padding: 6px 10px; font-size: 11px; }
-      .ed-btn { width: 32px; height: 32px; }
+      .editor-actions { gap: 0; }
+      .ed-btn { width: 30px; height: 30px; }
+      .ed-sep { margin: 6px 2px; }
 
       /* ---- Mobile Bottom Bar ---- */
       .mobile-bar {

@@ -162,6 +162,7 @@ The entire application is a single `index.html` file plus this README — no bui
 
 - **Fixed silent code corruption on iOS** — the editor now sets `autocorrect`, `autocapitalize`, and `autocomplete` to `off`. Previously iOS smart-punctuation could turn a straight `"` into a curly `"` and autocapitalize line starts, silently breaking code.
 - **Coding-key accessory bar** — on touch devices, a horizontally-scrollable bar of code keys (Tab, `( )`, `{ }`, `[ ]`, `< >`, `=`, `;`, `:`, `/`, `.`, quotes, `-`, `_`, `$`) appears above the on-screen keyboard. Bracket and quote keys insert as pairs with the caret placed between them. It rides above the keyboard via the VisualViewport API and stays hidden when a hardware keyboard is attached.
+- **Fixed editor toolbar crowding on phones** — the file-tab strip now clips and scrolls instead of letting tab labels spill over the action buttons on narrow screens; mobile spacing tightened so all three tabs fit on a normal phone.
 
 **Hardening**
 
