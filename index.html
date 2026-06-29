@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <meta name="robots" content="noindex, nofollow" />
   <title>HTML Playground</title>
+  <meta name="theme-color" content="#f4f5f7" id="themeColorMeta" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%233b6cf5%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221%22%20font-family%3D%22ui-monospace%2Cmonospace%22%20font-size%3D%2212%22%20fill%3D%22%23fff%22%20text-anchor%3D%22middle%22%20font-weight%3D%22700%22%3E%26lt%3B%2F%26gt%3B%3C%2Ftext%3E%3C%2Fsvg%3E" />
   <style>
     :root {
       --divider: 6px;
@@ -376,6 +378,10 @@
       content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
       border: 4px solid transparent; border-top-color: var(--text);
     }
+    /* Editor-toolbar toasts drop DOWN (the toolbar sits under the sticky header). */
+    .editor-actions .toast { bottom: auto; top: calc(100% + 6px); transform: translateX(-50%) translateY(-4px); }
+    .editor-actions .toast.show { transform: translateX(-50%) translateY(0); }
+    .editor-actions .toast::after { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: var(--text); }
 
     /* == Coding-key accessory bar == */
     .key-bar {
@@ -411,6 +417,7 @@
     .confirm-box {
       background: var(--panel); border: 1px solid var(--border-strong);
       border-radius: 14px; padding: 24px; width: 360px; max-width: 90vw;
+      max-height: 85vh; overflow-y: auto;
       box-shadow: 0 8px 32px rgba(0,0,0,.2);
     }
     .confirm-box h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
@@ -441,13 +448,17 @@
       .wrap { flex-direction: column; position: relative; }
 
       .editorPane {
-        width: 100% !important; height: 100% !important;
-        position: absolute; inset: 0; z-index: 2;
+        width: auto !important; height: auto !important;
+        position: absolute; top: 0; left: 0; right: 0;
+        bottom: calc(var(--mobile-bar) + var(--safe-bottom));
+        z-index: 2;
         transition: opacity .2s ease, visibility .2s ease;
       }
       .previewPane {
-        width: 100% !important; height: 100% !important;
-        position: absolute; inset: 0; z-index: 1;
+        width: auto !important; height: auto !important;
+        position: absolute; top: 0; left: 0; right: 0;
+        bottom: calc(var(--mobile-bar) + var(--safe-bottom));
+        z-index: 1;
         transition: opacity .2s ease, visibility .2s ease;
       }
 
@@ -462,16 +473,14 @@
 
       textarea {
         font-size: 14px;
-        padding: 12px 12px calc(12px + var(--mobile-bar) + var(--safe-bottom));
+        padding: 12px;
       }
 
       .consolePane.expanded { max-height: 50%; }
 
-      .editor-top { padding: 4px 6px 0; }
-      .tab { padding: 6px 10px; font-size: 11px; }
-      .editor-actions { gap: 0; }
-      .ed-btn { width: 30px; height: 30px; }
-      .ed-sep { margin: 6px 2px; }
+      .editor-top { padding: 4px 8px 0; }
+      .tab { padding: 6px 12px; font-size: 11px; }
+      .editor-actions { display: none; }
 
       /* ---- Mobile Bottom Bar ---- */
       .mobile-bar {
@@ -771,6 +780,18 @@
           </span>
           Auto-run
         </label>
+        <button class="btn" id="mobCopy">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="width:14px;height:14px"><rect x="5" y="5" width="9" height="9" rx="1.5"/><path d="M5 11H3.5A1.5 1.5 0 012 9.5v-7A1.5 1.5 0 013.5 1h7A1.5 1.5 0 0112 2.5V5"/></svg>
+          <span class="mob-label">Copy code</span>
+        </button>
+        <button class="btn" id="mobSelect">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="width:14px;height:14px"><path d="M2 4h12M2 8h12M2 12h8"/></svg>
+          <span class="mob-label">Select all</span>
+        </button>
+        <button class="btn" id="mobClear">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="width:14px;height:14px"><path d="M3 4h10M6 4V3a1 1 0 011-1h2a1 1 0 011 1v1M5 4v9a1 1 0 001 1h4a1 1 0 001-1V4"/></svg>
+          Clear current tab
+        </button>
         <button class="btn" id="mobImport">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M2 4.5A1.5 1.5 0 013.5 3h3l1.5 1.5h4.5A1.5 1.5 0 0114 6v.5"/><path d="M1.8 7h12.4l-1.3 5.2a1 1 0 01-.97.8H3.07a1 1 0 01-.97-.8z"/></svg>
           Import HTML
@@ -810,7 +831,7 @@
   <div class="footer">
     <span>HTML Playground</span>
     <span class="footer-sep">&middot;</span>
-    <span>v1.6.0</span>
+    <span>v1.6.1</span>
   </div>
 
 <script>
@@ -864,6 +885,9 @@
   var mobMenuOverlay = document.getElementById("mobMenuOverlay");
   var mobExport = document.getElementById("mobExport");
   var mobImport = document.getElementById("mobImport");
+  var mobCopy = document.getElementById("mobCopy");
+  var mobSelect = document.getElementById("mobSelect");
+  var mobClear = document.getElementById("mobClear");
   var keyBar = document.getElementById("keyBar");
   var mobResetPreview = document.getElementById("mobResetPreview");
   var mobResetCode = document.getElementById("mobResetCode");
@@ -906,6 +930,8 @@
   function applyTheme(theme) {
     state.theme = theme;
     root.setAttribute("data-theme", theme);
+    var tc = document.getElementById("themeColorMeta");
+    if (tc) tc.setAttribute("content", theme === "dark" ? "#0f1117" : "#f4f5f7");
     saveState();
   }
   themeToggle.addEventListener("click", function() { applyTheme(state.theme === "dark" ? "light" : "dark"); });
@@ -920,6 +946,7 @@
     consolePane.classList.toggle("expanded", open);
     consolePane.classList.toggle("collapsed", !open);
     consoleHeader.setAttribute("aria-expanded", open ? "true" : "false");
+    if (open) requestAnimationFrame(function() { consoleBody.scrollTop = consoleBody.scrollHeight; });
     saveState();
   }
   consoleHeader.addEventListener("click", function(e) {
@@ -1105,19 +1132,18 @@
   });
 
   // Editor actions
+  function copyCode() { return navigator.clipboard.writeText(editor.value); }
+  function selectAllCode() { editor.focus(); editor.select(); }
+  function clearCurrentTab() { editor.value = ""; state[state.activeTab] = ""; saveState(); editor.focus(); }
+
   edCopy.addEventListener("click", function() {
-    navigator.clipboard.writeText(editor.value).then(function() {
-      showToast(edCopyToast, edCopy);
-    }).catch(function() {});
+    copyCode().then(function() { showToast(edCopyToast, edCopy); }).catch(function() {});
   });
   edSelect.addEventListener("click", function() {
-    editor.focus(); editor.select();
+    selectAllCode();
     showToast(edSelectToast, null);
   });
-  edClear.addEventListener("click", function() {
-    editor.value = ""; state[state.activeTab] = "";
-    saveState(); editor.focus();
-  });
+  edClear.addEventListener("click", clearCurrentTab);
 
   // == Confirm dialog (generalized) ==
   var pendingConfirm = null;
@@ -1409,6 +1435,27 @@
   mobImport.addEventListener("click", function() {
     mobMenuOverlay.classList.remove("visible");
     triggerImport();
+  });
+
+  // Mobile menu editor actions (inline toolbar icons are hidden on phones)
+  function flashMobLabel(btn, text) {
+    var span = btn.querySelector(".mob-label");
+    if (!span || btn.dataset.flashing) return;
+    var orig = span.textContent;
+    span.textContent = text;
+    btn.dataset.flashing = "1";
+    setTimeout(function() { span.textContent = orig; delete btn.dataset.flashing; }, 1100);
+  }
+  mobCopy.addEventListener("click", function() {
+    copyCode().then(function() { flashMobLabel(mobCopy, "Copied!"); }).catch(function() {});
+  });
+  mobSelect.addEventListener("click", function() {
+    mobMenuOverlay.classList.remove("visible");
+    selectAllCode();
+  });
+  mobClear.addEventListener("click", function() {
+    mobMenuOverlay.classList.remove("visible");
+    clearCurrentTab();
   });
 
   // == Fullscreen preview ==

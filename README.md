@@ -22,6 +22,7 @@ Split editor and live preview environment similar to online HTML compilers — f
 - **Export** — download your merged HTML/CSS/JS as a standalone `.html` file
 - **Import** — open an `.html` file from your device (Files / iCloud Drive on iPad) and view it whole in the sandbox; the Code view shows the full source
 - **Fullscreen preview** — pop the preview to true OS-level fullscreen on iPad and desktop (falls back to full-screen Preview view on iPhone)
+- **Coding-key bar** — on touch devices, a Tab / brackets / quotes / operators key bar appears above the on-screen keyboard for easier typing on iPad
 - Keyboard accessible — tabs, console, and pane divider all operable without a mouse
 - Single `index.html` file — no build step, no backend
 
@@ -156,13 +157,22 @@ The entire application is a single `index.html` file plus this README — no bui
 
 ## Changelog
 
+### v1.6.1
+
+Fixes surfaced by real iPhone/iPad testing:
+
+- **Editor toolbar crowding on phones** — the file-tab strip now clips and scrolls instead of letting tab labels spill over the action buttons on narrow screens.
+- **Editor actions moved into the mobile menu** — on phones, Copy / Select all / Clear now live in the bottom "More" menu, leaving the editor toolbar as just the file tabs.
+- **Copy confirmation appearing under the header** — toolbar toasts now drop below the toolbar instead of popping up behind the sticky header.
+- **Console errors hidden behind the bottom bar** — the editor and preview panes now end above the fixed mobile bar, so the console panel (and its newest log) are no longer tucked behind it; opening the console also scrolls to the latest entry.
+- **Polish** — added an inline favicon and a theme-aware mobile browser chrome color (`theme-color`); the dialog box scrolls if taller than the viewport.
+
 ### v1.6.0
 
 **iPad / touch development**
 
 - **Fixed silent code corruption on iOS** — the editor now sets `autocorrect`, `autocapitalize`, and `autocomplete` to `off`. Previously iOS smart-punctuation could turn a straight `"` into a curly `"` and autocapitalize line starts, silently breaking code.
 - **Coding-key accessory bar** — on touch devices, a horizontally-scrollable bar of code keys (Tab, `( )`, `{ }`, `[ ]`, `< >`, `=`, `;`, `:`, `/`, `.`, quotes, `-`, `_`, `$`) appears above the on-screen keyboard. Bracket and quote keys insert as pairs with the caret placed between them. It rides above the keyboard via the VisualViewport API and stays hidden when a hardware keyboard is attached.
-- **Fixed editor toolbar crowding on phones** — the file-tab strip now clips and scrolls instead of letting tab labels spill over the action buttons on narrow screens; mobile spacing tightened so all three tabs fit on a normal phone.
 
 **Hardening**
 
