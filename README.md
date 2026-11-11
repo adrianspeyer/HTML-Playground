@@ -157,6 +157,10 @@ The entire application is a single `index.html` file plus this README — no bui
 
 ## Changelog
 
+### v1.6.2
+
+- **In-page links in the preview** — clicking a `#` link (a hash-routed tab, a skip link, a table of contents) loaded the playground inside its own preview, because a `srcdoc` frame resolves `#x` against the parent page. The preview now keeps these as hash changes, so `hashchange` routers and anchor jumps work. The sandbox and the preview's Content Security Policy are unchanged.
+
 ### v1.6.1
 
 Fixes surfaced by real iPhone/iPad testing:

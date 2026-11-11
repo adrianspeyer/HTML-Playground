@@ -831,7 +831,7 @@
   <div class="footer">
     <span>HTML Playground</span>
     <span class="footer-sep">&middot;</span>
-    <span>v1.6.1</span>
+    <span>v1.6.2</span>
   </div>
 
 <script>
@@ -1295,6 +1295,10 @@
       '  console.error=function(){orig.error.apply(null,arguments);wrap("error").apply(null,arguments)};\n' +
       '  window.addEventListener("error",function(e){send({type:"error",message:e.message,stack:(e.error&&e.error.stack)||""})});\n' +
       '  window.addEventListener("unhandledrejection",function(e){var r=e.reason;var m="Unhandled promise rejection",s="";if(typeof r==="string")m=r;else if(r&&r.message){m=r.message;s=r.stack||""}else{try{m=JSON.stringify(r)}catch(x){m=String(r)}}send({type:"error",message:m,stack:s})});\n' +
+      // In-page links: in a srcdoc frame "#x" resolves against the parent page, so a click
+      // would load the playground inside its own preview. Keep it a hash change instead.
+      // (A <base> tag would also fix it, but the CSP's base-uri 'none' rightly forbids one.)
+      '  document.addEventListener("click",function(e){if(e.defaultPrevented)return;var t=e.target;var a=t&&t.closest&&t.closest("a[href]");if(!a)return;var h=a.getAttribute("href");if(!h||h.charAt(0)!=="#")return;e.preventDefault();if(h.length>1)location.hash=h;else window.scrollTo(0,0)});\n' +
       '})();\n' +
       '</scr' + 'ipt>';
   }
